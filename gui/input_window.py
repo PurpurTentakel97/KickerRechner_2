@@ -265,6 +265,7 @@ class InputWindow(BaseWindow):
             self._teams_list.addItem(new_team)
             self.teams[current_league_index].append(new_team)
             self._team_name_le.clear()
+            self._remove_all_teams_btn.setEnabled(True)
 
         else:
             print("Kein Teamname vorhanden")  # TODO to UI
@@ -292,7 +293,15 @@ class InputWindow(BaseWindow):
         pass
 
     def _remove_team_from_current_league(self):
-        pass
+        current_team: TeamListItem = self._teams_list.currentItem()
+        current_league_index: int = self._league_list.currentItem().intex
+
+        if len(self.teams[current_league_index]) > 0:
+            self.teams[current_league_index].remove(current_team)
+            self._teams_list.removeItemWidget(current_team)
+            self._remove_team_btn.setEnabled(False)
+        else:
+            print("Keine Teams vorhanden")  # TODO to UI
 
     def _remove_all_teams_from_current_league(self):
         pass
