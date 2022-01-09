@@ -85,6 +85,7 @@ class InputWindow(BaseWindow):
         self._team_name_lb = QLabel()
         self._team_name_le = QLineEdit()
         self._team_name_le.textChanged.connect(self._edit_current_team_name)
+        self._team_name_le.returnPressed.connect(self._add_edit_team_by_enter)
         self._edit_team_btn = QPushButton()
         self._edit_team_btn.setEnabled(False)
         self._edit_team_btn.pressed.connect(self._set_new_current_team_name)
@@ -247,7 +248,7 @@ class InputWindow(BaseWindow):
             league.second_round = False
             league.setBackground(QColor('light grey'))
 
-    def _set_new_current_team_name(self):
+    def _set_new_current_team_name(self, name: str):
         pass
 
     def _set_current_league(self):
@@ -297,6 +298,17 @@ class InputWindow(BaseWindow):
 
         else:
             print("Kein Teamname vorhanden")  # TODO to UI
+
+    def _add_edit_team_by_enter(self) -> None:
+        team_name: str = self._team_name_le.text()
+        if len(team_name.strip()) > 0:
+            if self._is_team_edit:
+                self._set_new_current_team_name(team_name)
+                self._set_is_team_edit(False)
+            else:
+                self._add_team_to_current_league()
+        else:
+            print("Kein Teamname vohanden")
 
     def _edit_current_league_name(self) -> None:
         name: str = self._league_name_le.text()
