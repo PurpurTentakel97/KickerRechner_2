@@ -253,15 +253,30 @@ class InputWindow(BaseWindow):
     def _set_current_league(self):
         pass
 
-    def _set_current_team(self, item: TeamListItem):
-        self._is_team_edit = True
-        self._team_name_lb.setText("Teamname bearbeiten :")
-        self._team_name_le.setText(item.name)
-        self._team_name_le.setPlaceholderText("Aktuelles Team")
+    def _set_current_team(self, item: TeamListItem) -> None:
+        self._set_is_team_edit(edit=True, team=item)
 
-        self._add_team_btn.setEnabled(False)
-        self._edit_team_btn.setEnabled(True)
-        self._remove_team_btn.setEnabled(True)
+    def _set_is_team_edit(self, edit: bool, team: TeamListItem = None):
+        if edit:
+            self._is_team_edit = edit
+
+            self._add_team_btn.setEnabled(False)
+            self._remove_team_btn.setEnabled(True)
+            self._edit_team_btn.setEnabled(True)
+
+            self._team_name_lb.setText("Teamname bearbeiten :")
+            self._team_name_le.setText(team.name)
+            self._team_name_le.setPlaceholderText("Altes Team")
+
+        else:
+            self._is_team_edit = edit
+
+            self._remove_team_btn.setEnabled(False)
+            self._edit_team_btn.setEnabled(False)
+            self._teams_list.setCurrentItem(None)
+
+            self._team_name_lb.setText("Teamname :")
+            self._team_name_le.setPlaceholderText("Neues Team")
 
     def _add_league(self):
         pass
@@ -312,23 +327,28 @@ class InputWindow(BaseWindow):
         if len(self.teams[current_league_index]) > 0:
             self._teams_list.takeItem(self.teams[current_league_index].index(current_team))
             self.teams[current_league_index].remove(current_team)
-            self._is_team_edit = False
 
-            self._team_name_lb.setText("Teamname :")
             self._team_name_le.clear()
-            self._team_name_le.setPlaceholderText("Neues Team")
 
-            self._remove_team_btn.setEnabled(False)
-            self._edit_team_btn.setEnabled(False)
-            self._teams_list.setCurrentItem(None)
+            self._set_is_team_edit(edit=False)
+
             if len(self.teams[current_league_index]) == 0:
                 self._remove_all_teams_btn.setEnabled(False)
 
         else:
             print("Keine Teams vorhanden")  # TODO to UI
 
-    def _remove_all_teams_from_current_league(self):
-        pass
+    def _remove_all_teams_from_current_league(self) -> None:
+        current_league_index: int = self._league_list.currentItem().index
+
+        if len(self.teams[current_league_index]) > 0:
+            self._teams_list.clear()
+            self.teams[current_league_index] = list()
+            self._set_is_team_edit(edit=False)
+            self._remove_all_teams_btn.setEnabled(False)
+
+        else:
+            print("Keine Teams vorhanden")  # TODo to UI
 
     def _start(self):
         pass
