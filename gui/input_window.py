@@ -3,9 +3,10 @@
 # KickerRechner // Input Window
 
 import sys
-
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton, \
     QHBoxLayout, QVBoxLayout
+from PyQt5.QtGui import QColor
+
 from gui.base_window import BaseWindow
 
 
@@ -24,7 +25,7 @@ class LeagueListItem(QListWidgetItem):
 
     def update_text(self, new_name: str):
         self.name = new_name
-        if len(self.name) == 0:
+        if len(self.name.strip(" ")) == 0:
             self._set_text()
         else:
             self.setText(self.name)
@@ -55,6 +56,8 @@ class InputWindow(BaseWindow):
         self.leagues: list[LeagueListItem] = list()
         self.teams: list[list[TeamListItem]] = list()
 
+        self._is_team_edit: bool = False
+
         self._set_window_information()
         self._create_initial_ui()
         self._crate_initial_league()
@@ -74,16 +77,17 @@ class InputWindow(BaseWindow):
 
         self._active_cb = QCheckBox()
         self._active_cb.setChecked(True)
-        self._active_cb.toggled.connect(self._edit_current_league_active)
+        self._active_cb.toggled.connect(self._set_current_league_active)
         self._second_round_cb = QCheckBox()
         self._second_round_cb.setChecked(True)
-        self._second_round_cb.toggled.connect(self._edit_current_league_second_round)
+        self._second_round_cb.toggled.connect(self._set_current_league_second_round)
 
         self._team_name_lb = QLabel()
         self._team_name_le = QLineEdit()
+        self._team_name_le.textChanged.connect(self._edit_current_team_name)
         self._edit_team_btn = QPushButton()
         self._edit_team_btn.setEnabled(False)
-        self._edit_team_btn.pressed.connect(self._edit_current_team_name)
+        self._edit_team_btn.pressed.connect(self._set_new_current_team_name)
 
         self._add_team_btn = QPushButton()
         self._add_team_btn.setEnabled(False)
@@ -225,23 +229,48 @@ class InputWindow(BaseWindow):
     def _set_window_information(self):
         self.setWindowTitle("KickerRechner by Purpur Tentakel // Input Window")
 
+    def _set_current_league_active(self) -> None:
+        league: LeagueListItem = self._league_list.currentItem()
+        if self._active_cb.isChecked():
+            league.active = True
+            league.setForeground(QColor('black'))
+        else:
+            league.active = False
+            league.setForeground(QColor('grey'))
+
+    def _set_current_league_second_round(self) -> None:
+        league: LeagueListItem = self._league_list.currentItem()
+        if self._second_round_cb.isChecked():
+            league.second_round = True
+            league.setBackground(QColor('white'))
+        else:
+            league.second_round = False
+            league.setBackground(QColor('light grey'))
+
+    def _set_new_current_team_name(self):
+        pass
+
     def _add_league(self):
         pass
 
     def _add_team_to_current_league(self):
         pass
 
-    def _edit_current_league_name(self):
-        pass
+    def _edit_current_league_name(self) -> None:
+        name: str = self._league_name_le.text()
+        league: LeagueListItem = self._league_list.currentItem()
+        league.update_text(name)
 
-    def _edit_current_league_active(self):
-        pass
-
-    def _edit_current_league_second_round(self):
-        pass
-
-    def _edit_current_team_name(self):
-        pass
+    def _edit_current_team_name(self) -> None:
+        team_name: str = self._team_name_le.text()
+        if len(team_name.strip()) == 0:
+            self._add_team_btn.setEnabled(False)
+            self._edit_team_btn.setEnabled(False)
+        else:
+            if self._is_team_edit:
+                self._edit_team_btn.setEnabled(True)
+            else:
+                self._add_team_btn.setEnabled(True)
 
     def _remove_league(self):
         pass
