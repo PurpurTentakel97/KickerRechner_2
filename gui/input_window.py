@@ -4,7 +4,8 @@
 
 import sys
 
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton, \
+    QHBoxLayout, QVBoxLayout
 from gui.base_window import BaseWindow
 
 
@@ -19,7 +20,7 @@ class LeagueListItem(QListWidgetItem):
         self._set_text()
 
     def _set_text(self):
-        self.setText("liga " + str(self.index + 1))
+        self.setText("Liga " + str(self.index + 1))
 
     def update_text(self, new_name: str):
         self.name = new_name
@@ -56,7 +57,7 @@ class InputWindow(BaseWindow):
 
         self._set_window_information()
         self._create_initial_ui()
-        self._create_initial_team()
+        self._crate_initial_league()
         self._set_initial_text()
         self._set_layout()
 
@@ -82,6 +83,7 @@ class InputWindow(BaseWindow):
         self._team_name_le = QLineEdit()
         self._edit_team_btn = QPushButton()
         self._edit_team_btn.setEnabled(False)
+        self._edit_team_btn.pressed.connect(self._edit_current_team_name)
 
         self._add_team_btn = QPushButton()
         self._add_team_btn.setEnabled(False)
@@ -110,7 +112,7 @@ class InputWindow(BaseWindow):
         self._start_btn.pressed.connect(self._start)
 
     def _crate_initial_league(self):
-        league = LeagueListItem(len(self.leagues) + 1)
+        league = LeagueListItem(len(self.leagues))
         self._league_list.addItem(league)
         self._league_list.setCurrentItem(league)
         self.leagues.append(league)
@@ -123,10 +125,10 @@ class InputWindow(BaseWindow):
 
         # Right
         self._league_name_lb.setText("Liagename:")
-        self._league_name_le.setPlaceholderText("Liga" + str(current_league.index + 1))
+        self._league_name_le.setPlaceholderText("Liga " + str(current_league.index + 1))
 
-        self._active_cb.setText("Aktiv")
-        self._second_round_cb.setText("Aktiv")
+        self._active_cb.setText("Liga Aktiv")
+        self._second_round_cb.setText("Rückrunde Aktiv")
 
         self._team_name_lb.setText("Teamname:")
         self._team_name_le.setPlaceholderText("Neues Team")
@@ -145,6 +147,78 @@ class InputWindow(BaseWindow):
         self._start_btn.setText("Turnier starten")
 
     def _set_layout(self):
+        # Left
+        league_list_lb_hbox = QHBoxLayout()
+        league_list_lb_hbox.addWidget(self._league_lb)
+        league_list_lb_hbox.addStretch()
+
+        # League List
+
+        leagues_vbox = QVBoxLayout()
+        leagues_vbox.addLayout(league_list_lb_hbox)
+        leagues_vbox.addWidget(self._league_list)
+
+        # Right
+        league_name_lb_hbox = QHBoxLayout()
+        league_name_lb_hbox.addWidget(self._league_name_lb)
+        league_name_lb_hbox.addStretch()
+
+        # League LE
+
+        cb_hbox = QHBoxLayout()
+        cb_hbox.addWidget(self._active_cb)
+        cb_hbox.addWidget(self._second_round_cb)
+        cb_hbox.addStretch()
+
+        team_name_lb_hbox = QHBoxLayout()
+        team_name_lb_hbox.addWidget(self._team_name_lb)
+        team_name_lb_hbox.addStretch()
+
+        team_name_el_hbox = QHBoxLayout()
+        team_name_el_hbox.addWidget(self._team_name_le)
+        team_name_el_hbox.addWidget(self._edit_team_btn)
+
+        team_btn_hbox = QHBoxLayout()
+        team_btn_hbox.addWidget(self._add_team_btn)
+        team_btn_hbox.addWidget(self._remove_team_btn)
+        team_btn_hbox.addWidget(self._remove_all_teams_btn)
+        team_btn_hbox.addStretch()
+
+        team_list_lb_hbox = QHBoxLayout()
+        team_list_lb_hbox.addWidget(self._teams_list_lb)
+        team_list_lb_hbox.addStretch()
+
+        # Team List
+
+        right_vbox = QVBoxLayout()
+        right_vbox.addLayout(league_name_lb_hbox)
+        right_vbox.addWidget(self._league_name_le)
+        right_vbox.addLayout(cb_hbox)
+        right_vbox.addLayout(team_name_lb_hbox)
+        right_vbox.addLayout(team_name_el_hbox)
+        right_vbox.addLayout(team_btn_hbox)
+        right_vbox.addLayout(team_list_lb_hbox)
+        right_vbox.addWidget(self._teams_list)
+
+        # Up
+        up_hbox = QHBoxLayout()
+        up_hbox.addLayout(leagues_vbox)
+        up_hbox.addLayout(right_vbox)
+
+        # Bottom
+        bottom_hbox = QHBoxLayout()
+        bottom_hbox.addWidget(self._add_league_btn)
+        bottom_hbox.addWidget(self._remove_league_btn)
+        bottom_hbox.addWidget(self._remove_all_leagues_btn)
+        bottom_hbox.addStretch()
+        bottom_hbox.addWidget(self._start_btn)
+
+        # Global
+        global_vbox = QVBoxLayout()
+        global_vbox.addLayout(up_hbox)
+        global_vbox.addLayout(bottom_hbox)
+
+        self.setLayout(global_vbox)
 
         self.show()
 
@@ -164,6 +238,9 @@ class InputWindow(BaseWindow):
         pass
 
     def _edit_current_league_second_round(self):
+        pass
+
+    def _edit_current_team_name(self):
         pass
 
     def _remove_league(self):
