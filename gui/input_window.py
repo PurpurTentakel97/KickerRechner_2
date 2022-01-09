@@ -249,8 +249,15 @@ class InputWindow(BaseWindow):
             league.second_round = False
             league.setBackground(QColor('light grey'))
 
-    def _set_new_current_team_name(self, name: str):
-        pass
+    def _set_new_current_team_name(self):
+        team: TeamListItem = self._teams_list.currentItem()
+        name: str = self._team_name_le.text()
+        if name == team.name:
+            print("Keine Änderung des Teamnamen")  # TODO TO UI
+        team.update_text(name)
+        self._team_name_le.clear()
+        self._teams_list.setCurrentItem(None)
+        self._set_is_team_edit(False)
 
     def _set_current_league(self):
         pass
@@ -304,7 +311,7 @@ class InputWindow(BaseWindow):
         team_name: str = self._team_name_le.text()
         if len(team_name.strip()) > 0:
             if self._is_team_edit:
-                self._set_new_current_team_name(team_name)
+                self._set_new_current_team_name()
                 self._set_is_team_edit(False)
             else:
                 self._add_team_to_current_league()
@@ -344,7 +351,7 @@ class InputWindow(BaseWindow):
             self._team_name_le.clear()
 
             self._set_is_team_edit(edit=False)
-            self. _update_team_index(current_league_index)
+            self._update_team_index(current_league_index)
 
             if len(self.teams[current_league_index]) == 0:
                 self._remove_all_teams_btn.setEnabled(False)
