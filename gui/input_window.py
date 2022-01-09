@@ -64,7 +64,7 @@ class InputWindow(BaseWindow):
         self._set_initial_text()
         self._set_layout()
 
-    def _create_initial_ui(self):
+    def _create_initial_ui(self) -> None:
         # Left
         self._league_lb = QLabel()
         self._league_list = QListWidget()
@@ -115,14 +115,14 @@ class InputWindow(BaseWindow):
         self._start_btn.setEnabled(False)
         self._start_btn.pressed.connect(self._start)
 
-    def _crate_initial_league(self):
+    def _crate_initial_league(self) -> None:
         league = LeagueListItem(len(self.leagues))
         self._league_list.addItem(league)
         self._league_list.setCurrentItem(league)
         self.leagues.append(league)
         self.teams.append(list())
 
-    def _set_initial_text(self):
+    def _set_initial_text(self) -> None:
         current_league: LeagueListItem = self._league_list.currentItem()
         # Left
         self._league_lb.setText("Ligen:")
@@ -150,7 +150,7 @@ class InputWindow(BaseWindow):
         self._add_league_btn.setText("Liga hinzufügen")
         self._start_btn.setText("Turnier starten")
 
-    def _set_layout(self):
+    def _set_layout(self) -> None:
         # Left
         league_list_lb_hbox = QHBoxLayout()
         league_list_lb_hbox.addWidget(self._league_lb)
@@ -226,7 +226,7 @@ class InputWindow(BaseWindow):
 
         self.show()
 
-    def _set_window_information(self):
+    def _set_window_information(self) -> None:
         self.setWindowTitle("KickerRechner by Purpur Tentakel // Input Window")
 
     def _set_current_league_active(self) -> None:
@@ -253,8 +253,21 @@ class InputWindow(BaseWindow):
     def _add_league(self):
         pass
 
-    def _add_team_to_current_league(self):
-        pass
+    def _add_team_to_current_league(self) -> None:
+        team_name: str = self._team_name_le.text()
+        current_league_index: int = self._league_list.currentItem().index
+        if len(team_name.strip()) > 0:
+            new_team: TeamListItem = TeamListItem(team_name.strip())
+            for team in self.teams[current_league_index]:
+                if team.name == new_team.name:
+                    print("Team bereits vorhanden")  # TODO to UI
+                    return
+            self._teams_list.addItem(new_team)
+            self.teams[current_league_index].append(new_team)
+            self._team_name_le.clear()
+
+        else:
+            print("Kein Teamname vorhanden")  # TODO to UI
 
     def _edit_current_league_name(self) -> None:
         name: str = self._league_name_le.text()
