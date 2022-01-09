@@ -35,9 +35,10 @@ class LeagueListItem(QListWidgetItem):
 
 
 class TeamListItem(QListWidgetItem):
-    def __init__(self, name: str):
+    def __init__(self, name: str, index: int):
         super().__init__()
-        self.name = name
+        self.name: str = name
+        self.index: int = index
 
         self.set_text()
 
@@ -286,7 +287,7 @@ class InputWindow(BaseWindow):
         team_name: str = self._team_name_le.text()
         current_league_index: int = self._league_list.currentItem().index
         if len(team_name.strip()) > 0:
-            new_team: TeamListItem = TeamListItem(team_name.strip())
+            new_team: TeamListItem = TeamListItem(team_name.strip(), len(self.teams[current_league_index]))
             for team in self.teams[current_league_index]:
                 if team.name == new_team.name:
                     print("Team bereits vorhanden")  # TODO to UI
@@ -343,6 +344,7 @@ class InputWindow(BaseWindow):
             self._team_name_le.clear()
 
             self._set_is_team_edit(edit=False)
+            self. _update_team_index(current_league_index)
 
             if len(self.teams[current_league_index]) == 0:
                 self._remove_all_teams_btn.setEnabled(False)
@@ -361,6 +363,13 @@ class InputWindow(BaseWindow):
 
         else:
             print("Keine Teams vorhanden")  # TODo to UI
+
+    def _update_league_index(self):
+        pass
+
+    def _update_team_index(self, league_index: int) -> None:
+        for index, team in enumerate(self.teams[league_index]):
+            team.index = index
 
     def _start(self):
         pass
