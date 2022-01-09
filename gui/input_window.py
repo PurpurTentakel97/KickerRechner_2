@@ -250,6 +250,19 @@ class InputWindow(BaseWindow):
     def _set_new_current_team_name(self):
         pass
 
+    def _set_current_league(self):
+        pass
+
+    def _set_current_team(self, item: TeamListItem):
+        self._is_team_edit = True
+        self._team_name_lb.setText("Teamname bearbeiten :")
+        self._team_name_le.setText(item.name)
+        self._team_name_le.setPlaceholderText("Aktuelles Team")
+
+        self._add_team_btn.setEnabled(False)
+        self._edit_team_btn.setEnabled(True)
+        self._remove_team_btn.setEnabled(True)
+
     def _add_league(self):
         pass
 
@@ -292,24 +305,29 @@ class InputWindow(BaseWindow):
     def _remove_all_leagues(self):
         pass
 
-    def _remove_team_from_current_league(self):
+    def _remove_team_from_current_league(self) -> None:
         current_team: TeamListItem = self._teams_list.currentItem()
-        current_league_index: int = self._league_list.currentItem().intex
+        current_league_index: int = self._league_list.currentItem().index
 
         if len(self.teams[current_league_index]) > 0:
+            self._teams_list.takeItem(self.teams[current_league_index].index(current_team))
             self.teams[current_league_index].remove(current_team)
-            self._teams_list.removeItemWidget(current_team)
+            self._is_team_edit = False
+
+            self._team_name_lb.setText("Teamname :")
+            self._team_name_le.clear()
+            self._team_name_le.setPlaceholderText("Neues Team")
+
             self._remove_team_btn.setEnabled(False)
+            self._edit_team_btn.setEnabled(False)
+            self._teams_list.setCurrentItem(None)
+            if len(self.teams[current_league_index]) == 0:
+                self._remove_all_teams_btn.setEnabled(False)
+
         else:
             print("Keine Teams vorhanden")  # TODO to UI
 
     def _remove_all_teams_from_current_league(self):
-        pass
-
-    def _set_current_league(self):
-        pass
-
-    def _set_current_team(self):
         pass
 
     def _start(self):
