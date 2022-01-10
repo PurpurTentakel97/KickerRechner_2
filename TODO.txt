@@ -2,5 +2,3 @@
 # 09.01.2022
 # KickerRechner // TODO
 
-input window
-    - crash, when selecting al league with teams

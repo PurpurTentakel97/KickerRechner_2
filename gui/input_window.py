@@ -262,19 +262,21 @@ class InputWindow(BaseWindow):
     def _set_current_league(self) -> None:
         league: LeagueListItem = self._league_list.currentItem()
         self._set_is_team_edit(False)
-        self.teams.append(list())
 
         self._league_name_le.setText(league.name)
-        self._league_name_le.setPlaceholderText("Liga " + str(league.index+1))
+        self._league_name_le.setPlaceholderText("Liga " + str(league.index + 1))
 
         self._active_cb.setChecked(True if league.active else False)
         self._second_round_cb.setChecked(True if league.second_round else False)
 
         self._team_name_le.clear()
         self._teams_list.clear()
+
+        self._remove_all_teams_btn.setEnabled(len(self.teams[league.index]) > 0)
+
         for team in self.teams[league.index]:
-            print(team)
-            self._teams_list.addItem(team)
+            new_team: TeamListItem = TeamListItem(name=team.name, index=team.index)
+            self._teams_list.addItem(new_team)
 
     def _set_current_team(self, item: TeamListItem) -> None:
         self._set_is_team_edit(edit=True, team=item)
@@ -304,8 +306,10 @@ class InputWindow(BaseWindow):
     def _add_league(self) -> None:
         league = LeagueListItem(len(self.leagues))
         self._league_list.addItem(league)
-        self._league_list.setCurrentItem(league)
         self.leagues.append(league)
+        self.teams.append(list())
+        self._league_list.setCurrentItem(league)
+        self._set_current_league()
 
     def _add_team_to_current_league(self) -> None:
         team_name: str = self._team_name_le.text()
