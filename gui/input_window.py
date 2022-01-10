@@ -259,8 +259,22 @@ class InputWindow(BaseWindow):
         self._teams_list.setCurrentItem(None)
         self._set_is_team_edit(False)
 
-    def _set_current_league(self):
-        pass
+    def _set_current_league(self) -> None:
+        league: LeagueListItem = self._league_list.currentItem()
+        self._set_is_team_edit(False)
+        self.teams.append(list())
+
+        self._league_name_le.setText(league.name)
+        self._league_name_le.setPlaceholderText("Liga " + str(league.index+1))
+
+        self._active_cb.setChecked(True if league.active else False)
+        self._second_round_cb.setChecked(True if league.second_round else False)
+
+        self._team_name_le.clear()
+        self._teams_list.clear()
+        for team in self.teams[league.index]:
+            print(team)
+            self._teams_list.addItem(team)
 
     def _set_current_team(self, item: TeamListItem) -> None:
         self._set_is_team_edit(edit=True, team=item)
