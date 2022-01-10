@@ -82,8 +82,8 @@ class League:
                                             team_2=self.teams[team_2_int - 1], game_day=day, first_round=False)
                     self.games.append(final_game)
 
-    def _set_league_finished(self):
-        pass
+    def _set_league_finished(self) -> None:
+        self.finished = True
 
     def get_output(self) -> list:
         if self.finished:
@@ -132,8 +132,20 @@ class League:
             return next_game
 
     def _get_all_games(self) -> list[list]:
-        pass
+        all_games: list[list[str, str, str, int, bool, int, int, bool]] = list()
+        for game in self.games:
+            single_game: list[str, str, str, int, bool, int, int, bool] = [
+                game.game_name,
+                self._get_name_from_team(game.team_1),
+                self._get_name_from_team(game.team_2),
+                game.game_day,
+                game.first_round,
+                game.score_team_1,
+                game.score_team_2,
+                self.finished
+            ]
+            all_games.append(single_game)
+        return all_games
 
     def _get_tables(self, table_type: TableType) -> list[list]:
         pass
-
