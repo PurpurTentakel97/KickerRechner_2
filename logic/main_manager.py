@@ -20,6 +20,15 @@ class LeagueManager:
             if is_active:
                 self.active_leagues.append(league)
 
+    def get_output(self) -> tuple:
+        output: list[list[str, bool, list[str, str, str, int, bool, int, int, bool],
+                          list[list[str, str, str, int, bool, int, int, bool]], list[list], list[list], list[
+                              list]]] = list()
+        for league in self.all_leagues:
+            output.append(league.get_output())
+        return tuple(output)
+
+
 league_manager = LeagueManager
 
 
@@ -36,3 +45,8 @@ if __name__ == "__main__":
 def process_data_from_input_window(initial_input: tuple):
     print(initial_input)
     league_manager.create_leagues(self=LeagueManager(), initial_input=initial_input)
+    _put_data_to_main_window()
+
+
+def _put_data_to_main_window():
+    league_manager.get_output(self=LeagueManager())
