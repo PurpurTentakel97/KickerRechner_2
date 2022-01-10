@@ -24,7 +24,7 @@ class LeagueManager:
         output: list[list[str, bool, list[str, str, str, int, bool, int, int, bool],
                           list[list[str, str, str, int, bool, int, int, bool]], list[list], list[list], list[
                               list]]] = list()
-        for league in self.all_leagues:
+        for league in self.active_leagues:
             output.append(league.get_output())
         return tuple(output)
 

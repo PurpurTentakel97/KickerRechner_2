@@ -15,6 +15,7 @@ class League:
 
         self.teams: list[Team] = list()
         self.games: list[Game] = list()
+        self.finished: bool = False
 
         self._create_teams(team_names=team_names)
         self._create_games()
@@ -81,23 +82,28 @@ class League:
                                             team_2=self.teams[team_2_int - 1], game_day=day, first_round=False)
                     self.games.append(final_game)
 
-    def get_output(self) -> list:
+    def _set_league_finished(self):
+        pass
 
+    def get_output(self) -> list:
+        if self.finished:
+            return [self.finished]
         # [league_name:str, second_round:bool,[game_name:str, team_1_name:str, team_2_name:str, game_day:int,
         # first_round:bool, score_team_1:int, score_team_2:int, finished:bool], [[game_name:str, team_1_name:str,
         # team_2_name:str, game_day:int, first_round:bool, score_team_1:int, score_team_2:int, finished:bool][next
         # game]], [first_round_table:list],[second_round_table:list][total_table]]
-        output: list[str, bool, list[str, str, str, int, bool, int, int, bool],
-                     list[list[str, str, str, int, bool, int, int, bool]], list[list], list[list], list[list]] = [
-            self.name,
-            self.is_second_round,
-            self._get_next_game(),
-            self._get_all_games(),
-            self._get_tables(table_type=TableType.FIRST),
-            self._get_tables(table_type=TableType.SECOND),
-            self._get_tables(table_type=TableType.TOTAL)
+        else:
+            output: list[str, bool, list[str, str, str, int, bool, int, int, bool],
+                         list[list[str, str, str, int, bool, int, int, bool]], list[list], list[list], list[list]] = [
+                self.name,
+                self.is_second_round,
+                self._get_next_game(),
+                self._get_all_games(),
+                self._get_tables(table_type=TableType.FIRST),
+                self._get_tables(table_type=TableType.SECOND),
+                self._get_tables(table_type=TableType.TOTAL)
             ]
-        return output
+            return output
 
     def _get_name_from_team(self, team_to_check: Team) -> str:
         for team in self.teams:
@@ -105,10 +111,29 @@ class League:
                 return team.name
 
     def _get_next_game(self) -> list:
-        pass
+        current_game: str = ""
+        for game in self.games:
+            if not game.finished:
+                current_game: Game = game
+        if current_game == "":
+            self._set_league_finished()
+            return [self.finished]
+        else:
+            next_game: list[str, str, str, int, bool, int, int, bool] = [
+                current_game.game_name,
+                self._get_name_from_team(team_to_check=current_game.team_1),
+                self._get_name_from_team(team_to_check=current_game.team_2),
+                current_game.game_day,
+                current_game.first_round,
+                current_game.score_team_1,
+                current_game.score_team_2,
+                current_game.finished
+            ]
+            return next_game
 
     def _get_all_games(self) -> list[list]:
         pass
 
     def _get_tables(self, table_type: TableType) -> list[list]:
         pass
+
