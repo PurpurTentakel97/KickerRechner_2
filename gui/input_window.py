@@ -25,7 +25,7 @@ class LeagueListItem(QListWidgetItem):
 
     def update_text(self, new_name: str) -> None:
         self.name = new_name
-        if len(self.name.strip(" ")) == 0:
+        if len(self.name.strip()) == 0:
             self._set_text()
         else:
             self.setText(self.name)
@@ -61,7 +61,7 @@ class InputWindow(BaseWindow):
 
         self._set_window_information()
         self._create_initial_ui()
-        self._crate_initial_league()
+        self._create_initial_league()
         self._set_initial_text()
         self._set_layout()
 
@@ -117,7 +117,7 @@ class InputWindow(BaseWindow):
         self._start_btn.setEnabled(False)
         self._start_btn.pressed.connect(self._start)
 
-    def _crate_initial_league(self) -> None:
+    def _create_initial_league(self) -> None:
         league = LeagueListItem(len(self.leagues))
         self._league_list.addItem(league)
         self._league_list.setCurrentItem(league)
@@ -289,7 +289,7 @@ class InputWindow(BaseWindow):
             self._remove_team_btn.setEnabled(True)
             self._edit_team_btn.setEnabled(True)
 
-            self._team_name_lb.setText("Teamname bearbeiten :")
+            self._team_name_lb.setText("Teamname bearbeiten:")
             self._team_name_le.setText(team.name)
             self._team_name_le.setPlaceholderText("Altes Team")
 
@@ -300,7 +300,7 @@ class InputWindow(BaseWindow):
             self._edit_team_btn.setEnabled(False)
             self._teams_list.setCurrentItem(None)
 
-            self._team_name_lb.setText("Teamname :")
+            self._team_name_lb.setText("Teamname:")
             self._team_name_le.setPlaceholderText("Neues Team")
 
     def _add_league(self) -> None:
@@ -355,8 +355,24 @@ class InputWindow(BaseWindow):
             else:
                 self._add_team_btn.setEnabled(True)
 
-    def _remove_league(self):
-        pass
+    def _remove_league(self) -> None:
+        if len(self.leagues) > 0:
+            item: LeagueListItem = self._league_list.currentItem()
+            self._league_list.takeItem(item.index)
+            del self.teams[item.index]
+            del self.leagues[item.index]
+            self._update_league_index()
+            if len(self.leagues) > 0:
+                self._league_list.setCurrentItem(self.leagues[item.index-1])
+                self._set_current_league()
+                for league in self.leagues:
+                    league.update_text(league.name)
+            else:
+                self._create_initial_league()
+                self._league_list.setCurrentItem(self.leagues[0])
+                self._set_current_league()
+        else:
+            print("keine Liga vorhanden")  # TODO to UI
 
     def _remove_all_leagues(self):
         pass
@@ -392,8 +408,9 @@ class InputWindow(BaseWindow):
         else:
             print("Keine Teams vorhanden")  # TODo to UI
 
-    def _update_league_index(self):
-        pass
+    def _update_league_index(self) -> None:
+        for index, league in enumerate(self.leagues):
+            league.index = index
 
     def _update_team_index(self, league_index: int) -> None:
         for index, team in enumerate(self.teams[league_index]):
