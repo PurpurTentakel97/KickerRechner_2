@@ -11,7 +11,7 @@ from gui.base_window import BaseWindow
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, index: int):
+    def __init__(self, index: int) -> None:
         super().__init__()
         self.name: str = str()
         self.index: int = index
@@ -20,38 +20,38 @@ class LeagueListItem(QListWidgetItem):
 
         self._set_text()
 
-    def _set_text(self):
+    def _set_text(self) -> None:
         self.setText("Liga " + str(self.index + 1))
 
-    def update_text(self, new_name: str):
+    def update_text(self, new_name: str) -> None:
         self.name = new_name
         if len(self.name.strip(" ")) == 0:
             self._set_text()
         else:
             self.setText(self.name)
 
-    def update_index(self, index: int):
+    def update_index(self, index: int) -> None:
         self.index = index
 
 
 class TeamListItem(QListWidgetItem):
-    def __init__(self, name: str, index: int):
+    def __init__(self, name: str, index: int) -> None:
         super().__init__()
         self.name: str = name
         self.index: int = index
 
         self.set_text()
 
-    def set_text(self):
+    def set_text(self) -> None:
         self.setText(self.name)
 
-    def update_text(self, new_name: str):
+    def update_text(self, new_name: str) -> None:
         self.name = new_name
         self.setText(self.name)
 
 
 class InputWindow(BaseWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.leagues: list[LeagueListItem] = list()
@@ -249,7 +249,7 @@ class InputWindow(BaseWindow):
             league.second_round = False
             league.setBackground(QColor('light grey'))
 
-    def _set_new_current_team_name(self):
+    def _set_new_current_team_name(self) -> None:
         team: TeamListItem = self._teams_list.currentItem()
         name: str = self._team_name_le.text()
         if name == team.name:
@@ -287,8 +287,11 @@ class InputWindow(BaseWindow):
             self._team_name_lb.setText("Teamname :")
             self._team_name_le.setPlaceholderText("Neues Team")
 
-    def _add_league(self):
-        pass
+    def _add_league(self) -> None:
+        league = LeagueListItem(len(self.leagues))
+        self._league_list.addItem(league)
+        self._league_list.setCurrentItem(league)
+        self.leagues.append(league)
 
     def _add_team_to_current_league(self) -> None:
         team_name: str = self._team_name_le.text()
@@ -316,7 +319,7 @@ class InputWindow(BaseWindow):
             else:
                 self._add_team_to_current_league()
         else:
-            print("Kein Teamname vohanden")
+            print("Kein Teamname vohanden")  # TODO to UI
 
     def _edit_current_league_name(self) -> None:
         name: str = self._league_name_le.text()
