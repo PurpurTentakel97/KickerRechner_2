@@ -363,7 +363,7 @@ class InputWindow(BaseWindow):
             del self.leagues[item.index]
             self._update_league_index()
             if len(self.leagues) > 0:
-                self._league_list.setCurrentItem(self.leagues[item.index-1])
+                self._league_list.setCurrentItem(self.leagues[item.index - 1])
                 self._set_current_league()
                 for league in self.leagues:
                     league.update_text(league.name)
@@ -374,8 +374,16 @@ class InputWindow(BaseWindow):
         else:
             print("keine Liga vorhanden")  # TODO to UI
 
-    def _remove_all_leagues(self):
-        pass
+    def _remove_all_leagues(self) -> None:  # TODO Alert window
+        self.leagues.clear()
+        self._league_list.clear()
+        self.teams.clear()
+
+        self._set_is_team_edit(False)
+
+        self._create_initial_league()
+        self._league_list.setCurrentItem(self.leagues[0])
+        self._set_current_league()
 
     def _remove_team_from_current_league(self) -> None:
         current_team: TeamListItem = self._teams_list.currentItem()
@@ -396,7 +404,7 @@ class InputWindow(BaseWindow):
         else:
             print("Keine Teams vorhanden")  # TODO to UI
 
-    def _remove_all_teams_from_current_league(self) -> None:
+    def _remove_all_teams_from_current_league(self) -> None:  # TODO Alert window
         current_league_index: int = self._league_list.currentItem().index
 
         if len(self.teams[current_league_index]) > 0:
