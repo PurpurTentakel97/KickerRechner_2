@@ -3,12 +3,15 @@
 # KickerRechner // Input Window
 
 import sys
+
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton, \
     QHBoxLayout, QVBoxLayout, QMessageBox
 from PyQt5.QtGui import QColor
 
 from gui.base_window import BaseWindow
 from gui.enum_sheet import StartCheck
+
+from logic import main_manager
 
 
 class LeagueListItem(QListWidgetItem):
@@ -277,9 +280,12 @@ class InputWindow(BaseWindow):
 
         self._remove_all_teams_btn.setEnabled(len(self.teams[league.index]) > 0)
 
+        new_teams = list()
         for team in self.teams[league.index]:
             new_team: TeamListItem = TeamListItem(name=team.name, index=team.index)
             self._teams_list.addItem(new_team)
+            new_teams.append(new_team)
+        self.teams[league.index] = new_teams
 
     def _set_current_team(self, item: TeamListItem) -> None:
         self._set_is_team_edit(edit=True, team=item)
@@ -424,6 +430,7 @@ class InputWindow(BaseWindow):
 
             if len(self.teams[current_league_index]) > 0:
                 self._teams_list.clear()
+                self._team_name_le.clear()
                 self.teams[current_league_index] = list()
                 self._set_is_team_edit(edit=False)
                 self._remove_all_teams_btn.setEnabled(False)
@@ -503,12 +510,12 @@ class InputWindow(BaseWindow):
                 for team in self.teams[league.index]:
                     team_output.append(team.name)
                 league_output: list[str, bool, bool, list[str]] = [
-                    league.name, league.active, league.second_round, team_output
+                    league.name if len(league.name) > 0 else "liga " + str(league.index + 1),
+                    league.active, league.second_round, team_output
                 ]
                 output.append(league_output)
-
-            print("output")
-            # TODO put to logic
+            self.close()
+            main_manager.process_data_from_input_window(initial_input=tuple(output))
 
 
 window = InputWindow

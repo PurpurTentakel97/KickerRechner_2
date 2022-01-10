@@ -7,7 +7,7 @@ from logic.game import Game
 
 
 class League:
-    def __init__(self, name: str, team_names: list[str], is_second_round: bool, is_active: bool) -> None:
+    def __init__(self, name: str, is_second_round: bool, is_active: bool, team_names: list[str]) -> None:
         self.name: str = name
         self.is_second_round: bool = is_second_round
         self.is_active: bool = is_active
