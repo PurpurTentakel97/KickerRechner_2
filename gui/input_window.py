@@ -451,8 +451,48 @@ class InputWindow(BaseWindow):
 
         return retval == QMessageBox.Ok
 
+    def _is_valid_output(self) -> bool:
+        # check if league
+        if len(self.leagues) == 0:
+            print("keine Liga vorhanden")  # TODO to UI
+            return False
+
+        # check if less than two teams per league
+        for teams in self.teams:
+            if len(teams) < 2:
+                print("Liga %s enthält nicht genügend Teams" % self._league_list[
+                    self.teams.index(teams)].name)  # TODO to UI
+                return False
+
+        # check if any league is active
+        league_active: bool = False
+        for league in self.leagues:
+            if league.active:
+                league_active = True
+                break
+        if not league_active:
+            print("keine aktive Liga")  # TODO to UI
+            return False
+
+        # is valid input
+        return True
+
     def _start(self):
-        pass
+        # ([league_name:str, active:bool, second_round:bool, [teams:list[str]],[next league])
+        if self._is_valid_output():
+            output: list[list[str, bool, bool, list[str]]] = list()
+            for league in self.leagues:
+                team_output: list[str] = list()
+                for team in self.teams[league.index]:
+                    team_output.append(team.name)
+                league_output: list[str, bool, bool, list[str]] = [
+                    league.name, league.active, league.second_round, team_output
+                ]
+                output.append(league_output)
+
+            # TODO put to UI
+
+
 
 
 window = InputWindow
