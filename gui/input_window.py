@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, 
 from PyQt5.QtGui import QColor
 
 from gui.base_window import BaseWindow
+from gui.enum_sheet import StartCheck
 
 
 class LeagueListItem(QListWidgetItem):
@@ -123,6 +124,7 @@ class InputWindow(BaseWindow):
         self._league_list.setCurrentItem(league)
         self.leagues.append(league)
         self.teams.append(list())
+        self._set_start_btn_bool()
 
     def _set_initial_text(self) -> None:
         current_league: LeagueListItem = self._league_list.currentItem()
@@ -239,6 +241,7 @@ class InputWindow(BaseWindow):
         else:
             league.active = False
             league.setForeground(QColor('grey'))
+        self._set_start_btn_bool()
 
     def _set_current_league_second_round(self) -> None:
         league: LeagueListItem = self._league_list.currentItem()
@@ -303,6 +306,9 @@ class InputWindow(BaseWindow):
             self._team_name_lb.setText("Teamname:")
             self._team_name_le.setPlaceholderText("Neues Team")
 
+    def _set_start_btn_bool(self) -> None:
+        self._start_btn.setEnabled(self._is_valid_output())
+
     def _add_league(self) -> None:
         league = LeagueListItem(len(self.leagues))
         self._league_list.addItem(league)
@@ -310,6 +316,7 @@ class InputWindow(BaseWindow):
         self.teams.append(list())
         self._league_list.setCurrentItem(league)
         self._set_current_league()
+        self._set_start_btn_bool()
 
     def _add_team_to_current_league(self) -> None:
         team_name: str = self._team_name_le.text()
@@ -324,6 +331,7 @@ class InputWindow(BaseWindow):
             self.teams[current_league_index].append(new_team)
             self._team_name_le.clear()
             self._remove_all_teams_btn.setEnabled(True)
+            self._set_start_btn_bool()
 
         else:
             print("Kein Teamname vorhanden")  # TODO to UI
@@ -371,6 +379,8 @@ class InputWindow(BaseWindow):
                 self._create_initial_league()
                 self._league_list.setCurrentItem(self.leagues[0])
                 self._set_current_league()
+
+            self._set_start_btn_bool()
         else:
             print("keine Liga vorhanden")  # TODO to UI
 
@@ -385,6 +395,7 @@ class InputWindow(BaseWindow):
             self._create_initial_league()
             self._league_list.setCurrentItem(self.leagues[0])
             self._set_current_league()
+            self._set_start_btn_bool()
 
     def _remove_team_from_current_league(self) -> None:
         current_team: TeamListItem = self._teams_list.currentItem()
@@ -402,6 +413,8 @@ class InputWindow(BaseWindow):
             if len(self.teams[current_league_index]) == 0:
                 self._remove_all_teams_btn.setEnabled(False)
 
+            self._set_start_btn_bool()
+
         else:
             print("Keine Teams vorhanden")  # TODO to UI
 
@@ -414,6 +427,7 @@ class InputWindow(BaseWindow):
                 self.teams[current_league_index] = list()
                 self._set_is_team_edit(edit=False)
                 self._remove_all_teams_btn.setEnabled(False)
+                self._set_start_btn_bool()
 
             else:
                 print("Keine Teams vorhanden")  # TODo to UI
@@ -451,17 +465,19 @@ class InputWindow(BaseWindow):
 
         return retval == QMessageBox.Ok
 
-    def _is_valid_output(self) -> bool:
+    def _is_valid_output(self, start: StartCheck = StartCheck.CHECK) -> bool:
         # check if league
         if len(self.leagues) == 0:
-            print("keine Liga vorhanden")  # TODO to UI
+            if start == StartCheck.START:
+                print("keine Liga vorhanden")  # TODO to UI
             return False
 
         # check if less than two teams per league
         for teams in self.teams:
             if len(teams) < 2:
-                print("Liga %s enthält nicht genügend Teams" % self._league_list[
-                    self.teams.index(teams)].name)  # TODO to UI
+                if start == StartCheck.START:
+                    print("Liga %s enthält nicht genügend Teams" % self.leagues[
+                        self.teams.index(teams)].name)  # TODO to UI
                 return False
 
         # check if any league is active
@@ -471,15 +487,16 @@ class InputWindow(BaseWindow):
                 league_active = True
                 break
         if not league_active:
-            print("keine aktive Liga")  # TODO to UI
+            if start == StartCheck.START:
+                print("keine aktive Liga")  # TODO to UI
             return False
 
         # is valid input
         return True
 
-    def _start(self):
+    def _start(self) -> None:
         # ([league_name:str, active:bool, second_round:bool, [teams:list[str]],[next league])
-        if self._is_valid_output():
+        if self._is_valid_output(start=StartCheck.START):
             output: list[list[str, bool, bool, list[str]]] = list()
             for league in self.leagues:
                 team_output: list[str] = list()
@@ -490,9 +507,8 @@ class InputWindow(BaseWindow):
                 ]
                 output.append(league_output)
 
-            # TODO put to UI
-
-
+            print("output")
+            # TODO put to logic
 
 
 window = InputWindow
