@@ -4,7 +4,7 @@
 
 import sys
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton, \
-    QHBoxLayout, QVBoxLayout
+    QHBoxLayout, QVBoxLayout, QMessageBox
 from PyQt5.QtGui import QColor
 
 from gui.base_window import BaseWindow
@@ -374,16 +374,17 @@ class InputWindow(BaseWindow):
         else:
             print("keine Liga vorhanden")  # TODO to UI
 
-    def _remove_all_leagues(self) -> None:  # TODO Alert window
-        self.leagues.clear()
-        self._league_list.clear()
-        self.teams.clear()
+    def _remove_all_leagues(self) -> None:
+        if self._get_remove_all_leagues_commit():
+            self.leagues.clear()
+            self._league_list.clear()
+            self.teams.clear()
 
-        self._set_is_team_edit(False)
+            self._set_is_team_edit(False)
 
-        self._create_initial_league()
-        self._league_list.setCurrentItem(self.leagues[0])
-        self._set_current_league()
+            self._create_initial_league()
+            self._league_list.setCurrentItem(self.leagues[0])
+            self._set_current_league()
 
     def _remove_team_from_current_league(self) -> None:
         current_team: TeamListItem = self._teams_list.currentItem()
@@ -404,17 +405,18 @@ class InputWindow(BaseWindow):
         else:
             print("Keine Teams vorhanden")  # TODO to UI
 
-    def _remove_all_teams_from_current_league(self) -> None:  # TODO Alert window
-        current_league_index: int = self._league_list.currentItem().index
+    def _remove_all_teams_from_current_league(self) -> None:
+        if self._get_remove_all_teams_commit():
+            current_league_index: int = self._league_list.currentItem().index
 
-        if len(self.teams[current_league_index]) > 0:
-            self._teams_list.clear()
-            self.teams[current_league_index] = list()
-            self._set_is_team_edit(edit=False)
-            self._remove_all_teams_btn.setEnabled(False)
+            if len(self.teams[current_league_index]) > 0:
+                self._teams_list.clear()
+                self.teams[current_league_index] = list()
+                self._set_is_team_edit(edit=False)
+                self._remove_all_teams_btn.setEnabled(False)
 
-        else:
-            print("Keine Teams vorhanden")  # TODo to UI
+            else:
+                print("Keine Teams vorhanden")  # TODo to UI
 
     def _update_league_index(self) -> None:
         for index, league in enumerate(self.leagues):
@@ -423,6 +425,31 @@ class InputWindow(BaseWindow):
     def _update_team_index(self, league_index: int) -> None:
         for index, team in enumerate(self.teams[league_index]):
             team.index = index
+
+    def _get_remove_all_leagues_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Question)
+
+        msg.setText("Alle Ligen löschen?")
+        msg.setInformativeText("Du bist dabei alle Ligen zu löschen. Dadurch gehen alle bisherigen Eingaben verloren!")
+        msg.setWindowTitle("Löschen aller Ligen")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok
+
+    def _get_remove_all_teams_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Question)
+
+        msg.setText("Alle Teams dieser Liga löschen?")
+        msg.setInformativeText("Du bist dabei alle Teams dieser Liga zu löschen. "
+                               "Dadurch gehen alle bisherigen Team-Eingaben dieser Liga verloren!")
+        msg.setWindowTitle("Löschen aller Teams der Liga")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok
 
     def _start(self):
         pass
