@@ -4,7 +4,7 @@
 
 from logic.team import Team
 from logic.game import Game
-from logic.enum_sheet import TableType
+from logic.enum_sheet import TableType, Stats
 
 
 class League:
@@ -99,9 +99,9 @@ class League:
                 self.is_second_round,
                 self._get_next_game(),
                 self._get_all_games(),
-                self._get_tables(table_type=TableType.FIRST),
-                self._get_tables(table_type=TableType.SECOND),
-                self._get_tables(table_type=TableType.TOTAL)
+                self._get_round_tables(table_type=TableType.FIRST),
+                self._get_round_tables(table_type=TableType.SECOND),
+                # self._get_round_tables(table_type=TableType.TOTAL)
             ]
             return output
 
@@ -109,6 +109,15 @@ class League:
         for team in self.teams:
             if team == team_to_check:
                 return team.name
+
+    def _get_game_from_teams_in_round_table_type(self, team_1: Team, team_2: Team, table_type: TableType) -> Game:
+        for game in self.games:
+            if table_type == TableType.FIRST and game.first_round:
+                if team_1 == game.team_1 and team_2 == game.team_2 or team_1 == game.team_2 and team_2 == game.team_1:
+                    return game
+            elif table_type == TableType.SECOND and not game.first_round:
+                if team_1 == game.team_1 and team_2 == game.team_2 or team_1 == game.team_2 and team_2 == game.team_1:
+                    return game
 
     def _get_next_game(self) -> list:
         current_game: str = ""
@@ -136,8 +145,8 @@ class League:
         for game in self.games:
             single_game: list[str, str, str, int, bool, int, int, bool] = [
                 game.game_name,
-                self._get_name_from_team(game.team_1),
-                self._get_name_from_team(game.team_2),
+                self._get_name_from_team(team_to_check=game.team_1),
+                self._get_name_from_team(team_to_check=game.team_2),
                 game.game_day,
                 game.first_round,
                 game.score_team_1,
@@ -147,5 +156,48 @@ class League:
             all_games.append(single_game)
         return all_games
 
-    def _get_tables(self, table_type: TableType) -> list[list]:
-        pass
+    def _get_round_tables(self, table_type: TableType) -> list[list]:
+        table: list[list[str]] = list()
+        headers: list[str] = ["Rang", "Spiele"]
+        ranked_teams_with_stats = self._get_ranked_teams_with_stats_for_round_tables(table_type=table_type)
+        for team, *_ in ranked_teams_with_stats:
+            headers.append(self._get_name_from_team(team_to_check=team))
+        headers.extend(["Punkte", "Tor-Diff", "Tore", "Gegentore", "Bilanz"])
+        table.append(headers)
+        for index, team, stats in enumerate(ranked_teams_with_stats):
+            row: list[str] = [str(index + 1), self._get_name_from_team(team_to_check=team)]
+            for opponent, *_ in ranked_teams_with_stats:
+                if team == opponent:
+                    row.append("-----")
+                else:
+                    game: Game = self._get_game_from_teams_in_round_table_type(team_1=team, team_2=opponent,
+                                                                               table_type=table_type)
+                    result: str = game.get_result_string_from_team_view(team=team)
+                    row.append(result)
+            row.extend([str(stats.POINTS), str(stats.GOAL_DIFF), str(stats.GOAL), str(stats.COUNTER_GOALS),
+                        str(stats.BALANCE)])
+            table.append(row)
+        return table
+
+    def _get_ranked_teams_with_stats_for_round_tables(self, table_type: TableType) -> list:
+        teams_with_stats = dict()
+        for team in self.teams:
+            stats_of_team: dict[Stats] = dict()
+            stats_of_team[Stats.POINTS] = team.first_round_points if table_type.FIRST else team.second_round_points
+            stats_of_team[Stats.GOALS] = team.first_round_goals if table_type.FIRST else team.second_round_goals
+            stats_of_team[Stats.COUNTER_GOALS] = team.first_round_counter_goals if table_type.FIRST \
+                else team.second_round_counter_goals
+            stats_of_team[Stats.GOAL_DIFF] = team.first_round_goals - team.first_round_counter_goals if table_type.FIRST \
+                else team.second_round_goals - team.second_round_counter_goals
+            stats_of_team[Stats.BALANCE] = (str(team.first_round_wins) + " / " + str(team.first_round_draw) + " / " +
+                                            str(team.first_round_loose)) if table_type.FIRST else \
+                (str(team.second_round_wins) + " / " + str(team.second_round_draw) + " / " +
+                 str(team.second_round_loose))
+            teams_with_stats[team] = stats_of_team
+
+        teams_with_stats = list(teams_with_stats)
+        teams_with_stats.sort(key=lambda x: (x[0][Stats.POINTS],
+                                             x[0][Stats.GOAL_DIFF],
+                                             x[0][Stats.GOALS],
+                                             x[0][Stats.COUNTER_GOALS]), reverse=True)
+        return teams_with_stats

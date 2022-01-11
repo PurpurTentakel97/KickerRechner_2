@@ -16,3 +16,13 @@ class Game:
         self.score_team_1: int = int()
         self.score_team_2: int = int()
         self.finished: bool = False
+
+    def get_result_string_from_team_view(self, team: Team) -> str:
+        if not self.finished:
+            return "- : -"
+        elif team == self.team_1:
+            return str(self.score_team_1) + " : " + str(self.score_team_2)
+        elif team == self.team_2:
+            return str(self.score_team_2) + " : " + str(self.score_team_1)
+        else:
+            print("Team not in Game")  # TODO to UI
