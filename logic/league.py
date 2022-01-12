@@ -159,7 +159,7 @@ class League:
     def _get_round_tables(self, table_type: TableType) -> list[list]:
         table: list[list[str]] = list()
         headers: list[str] = ["Rang", "Spiele"]
-        ranked_teams_with_stats = self._get_ranked_teams_with_stats_for_round_tables(table_type=table_type)
+        ranked_teams_with_stats: list[dict] = self._get_ranked_teams_with_stats_for_round_tables(table_type=table_type)
         for team, *_ in ranked_teams_with_stats:
             headers.append(self._get_name_from_team(team_to_check=team))
         headers.extend(["Punkte", "Tor-Diff", "Tore", "Gegentore", "Bilanz"])
@@ -179,7 +179,23 @@ class League:
             table.append(row)
         return table
 
-    def _get_ranked_teams_with_stats_for_round_tables(self, table_type: TableType) -> list:
+    def _get_total_table(self) -> list[list]:
+        table: list[list[str]] = list()
+        headers: list[str] = ["Rang", "Name", "Punkte", "Tor-diff", "Tore", "Gegentore", "Bilanz"]
+        table.append(headers)
+        ranked_teams_with_stats: list[dict] = self._get_ranked_teams_with_stats_for_total_table()
+        for index, team, stats in enumerate(ranked_teams_with_stats):
+            row: list[str] = [str(index + 1),
+                              team.name,
+                              str(stats.POINTS),
+                              str(stats.GOAL_DIFF),
+                              str(stats.GOAL),
+                              str(stats.COUNTER_GOALS),
+                              stats.BALANCE]
+            table.append(row)
+        return table
+
+    def _get_ranked_teams_with_stats_for_round_tables(self, table_type: TableType) -> list[dict]:
         teams_with_stats = dict()
         for team in self.teams:
             stats_of_team: dict[Stats] = dict()
@@ -193,6 +209,24 @@ class League:
                                             str(team.first_round_loose)) if table_type.FIRST else \
                 (str(team.second_round_wins) + " / " + str(team.second_round_draw) + " / " +
                  str(team.second_round_loose))
+            teams_with_stats[team] = stats_of_team
+
+        teams_with_stats = list(teams_with_stats)
+        teams_with_stats.sort(key=lambda x: (x[0][Stats.POINTS],
+                                             x[0][Stats.GOAL_DIFF],
+                                             x[0][Stats.GOALS],
+                                             x[0][Stats.COUNTER_GOALS]), reverse=True)
+        return teams_with_stats
+
+    def _get_ranked_teams_with_stats_for_total_table(self) -> list[dict]:
+        teams_with_stats = dict()
+        for team in self.teams:
+            stats_of_team: dict[Stats] = dict()
+            stats_of_team[Stats.POINTS] = team.points
+            stats_of_team[Stats.GOALS] = team.goals
+            stats_of_team[Stats.COUNTER_GOALS] = team.counter_goals
+            stats_of_team[Stats.GOAL_DIFF] = team.goals - team.counter_goals
+            stats_of_team[Stats.BALANCE] = str(team.wins) + " / " + str(team.draw) + " / " + str(team.loose)
             teams_with_stats[team] = stats_of_team
 
         teams_with_stats = list(teams_with_stats)
