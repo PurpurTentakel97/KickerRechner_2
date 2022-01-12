@@ -262,7 +262,7 @@ class InputWindow(BaseWindow):
         team: TeamListItem = self._teams_list.currentItem()
         name: str = self._team_name_le.text()
         if name == team.name:
-            self.set_status_bar("Keine Anderung des Teamnamen %s." % name)
+            self.set_status_bar("Keine Änderung des Teamnamen %s." % name)
         team.update_text(name)
         self._team_name_le.clear()
         self._teams_list.setCurrentItem(None)
@@ -334,7 +334,7 @@ class InputWindow(BaseWindow):
             new_team: TeamListItem = TeamListItem(team_name.strip(), len(self.teams[current_league_index]))
             for team in self.teams[current_league_index]:
                 if team.name == new_team.name:
-                    print("Team bereits vorhanden")  # TODO to UI
+                    self.set_status_bar("Team bereits vorhanden")
                     return
             self._teams_list.addItem(new_team)
             self.teams[current_league_index].append(new_team)
@@ -343,7 +343,7 @@ class InputWindow(BaseWindow):
             self._set_start_btn_bool()
 
         else:
-            print("Kein Teamname vorhanden")  # TODO to UI
+            self.set_status_bar("Kein Teamname vorhanden")
 
     def _add_edit_team_by_enter(self) -> None:
         team_name: str = self._team_name_le.text()
@@ -354,7 +354,7 @@ class InputWindow(BaseWindow):
             else:
                 self._add_team_to_current_league()
         else:
-            print("Kein Teamname vohanden")  # TODO to UI
+            self.set_status_bar("Kein Teamname vohanden")
 
     def _edit_current_league_name(self) -> None:
         name: str = self._league_name_le.text()
@@ -391,7 +391,7 @@ class InputWindow(BaseWindow):
 
             self._set_start_btn_bool()
         else:
-            print("keine Liga vorhanden")  # TODO to UI
+            self.set_status_bar("keine Liga vorhanden")
 
     def _remove_all_leagues(self) -> None:
         if self._get_remove_all_leagues_commit():
@@ -425,7 +425,7 @@ class InputWindow(BaseWindow):
             self._set_start_btn_bool()
 
         else:
-            print("Keine Teams vorhanden")  # TODO to UI
+            self.set_status_bar("Keine Teams vorhanden")
 
     def _remove_all_teams_from_current_league(self) -> None:
         if self._get_remove_all_teams_commit():
@@ -440,7 +440,7 @@ class InputWindow(BaseWindow):
                 self._set_start_btn_bool()
 
             else:
-                print("Keine Teams vorhanden")  # TODo to UI
+                self.set_status_bar("Keine Teams vorhanden")
 
     def _update_league_index(self) -> None:
         for index, league in enumerate(self.leagues):
@@ -479,15 +479,15 @@ class InputWindow(BaseWindow):
         # check if league
         if len(self.leagues) == 0:
             if start == StartCheck.START:
-                print("keine Liga vorhanden")  # TODO to UI
+                self.set_status_bar("Keine Liga vorhanden")
             return False
 
         # check if less than two teams per league
         for teams in self.teams:
             if len(teams) < 2:
                 if start == StartCheck.START:
-                    print("Liga %s enthält nicht genügend Teams" % self.leagues[
-                        self.teams.index(teams)].name)  # TODO to UI
+                    self.set_status_bar("Liga %s enthält nicht genügend Teams" % self.leagues[
+                        self.teams.index(teams)].name)
                 return False
 
         # check if any league is active
@@ -498,7 +498,7 @@ class InputWindow(BaseWindow):
                 break
         if not league_active:
             if start == StartCheck.START:
-                print("keine aktive Liga")  # TODO to UI
+                self.set_status_bar("keine aktive Liga")
             return False
 
         # is valid input

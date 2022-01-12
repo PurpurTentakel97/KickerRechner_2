@@ -13,4 +13,4 @@ class BaseWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def set_status_bar(self, massage: str):
-        self.statusBar().showMessage(massage)
+        self.statusBar().showMessage("Info: " + massage, 5000)
