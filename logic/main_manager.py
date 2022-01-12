@@ -2,9 +2,10 @@
 # 09.01.2022
 # KickerRechner // Manager
 # __Main_Sheet__
-
+import gui.main_window
 from logic.league import League
 from gui import input_window
+from gui import main_window
 
 all_leagues: list[League] = list()
 active_leagues: list[League] = list()
@@ -28,6 +29,7 @@ def _put_data_to_main_window():
     for league in active_leagues:
         output.append(league.get_output())
         _print_league_output(league)
+    gui.main_window.create_main_window(initial_input=tuple(output))
 
 
 def _print_league_output(league):
