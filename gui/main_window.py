@@ -6,10 +6,11 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget
     QHBoxLayout, QVBoxLayout, QGridLayout
 
 from gui.base_window import BaseWindow
+from logic.league import LeagueOutput
 
 
 class MainWindow(BaseWindow):
-    def __init__(self, initial_input: tuple):
+    def __init__(self, initial_input: tuple[LeagueOutput]):
         super().__init__()
 
         self._create_initial_ui()

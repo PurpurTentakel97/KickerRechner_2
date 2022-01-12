@@ -3,7 +3,7 @@
 # KickerRechner // Manager
 # __Main_Sheet__
 import gui.main_window
-from logic.league import League
+from logic.league import League, LeagueOutput
 from gui import input_window
 from gui import main_window
 
@@ -25,35 +25,7 @@ def process_data_from_input_window(initial_input: tuple):
 
 
 def _put_data_to_main_window():
-    output: list = list()
+    output: list[LeagueOutput] = list()
     for league in active_leagues:
         output.append(league.get_output())
-        _print_league_output(league)
     gui.main_window.create_main_window(initial_input=tuple(output))
-
-
-def _print_league_output(league):
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    print("  |                                         Neue Liga                                               |  ")
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    print("\n")
-    print(league.get_output())
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    print(league.get_output()[0])
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    print(league.get_output()[1])
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    print(league.get_output()[2])
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    for line in league.get_output()[3]:
-        print(line)
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    for line in league.get_output()[4]:
-        print(line)
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    for line in league.get_output()[5]:
-        print(line)
-    print("  |-------------------------------------------------------------------------------------------------|  ")
-    for line in league.get_output()[6]:
-        print(line)
-    print("\n\n")

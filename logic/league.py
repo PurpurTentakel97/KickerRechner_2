@@ -7,6 +7,31 @@ from logic.game import Game
 from logic.enum_sheet import TableType, Stats
 
 
+class GameOutput:
+    def __init__(self, game_name: str, team_1_name: str, team_2_name: str, game_day: int, first_round: bool,
+                 score_team_1: int = 0, score_team_2: int = 0, finished: bool = False):
+        self.game_name: str = game_name
+        self.team_1_name: str = team_1_name
+        self.team_2_name: str = team_2_name
+        self.game_day: int = game_day
+        self.first_round: bool = first_round
+        self.score_team_1: int = score_team_1
+        self.score_team_2: int = score_team_2
+        self.finished: bool = finished
+
+
+class LeagueOutput:
+    def __init__(self, name: str, second_round: bool, next_game: GameOutput, all_games: tuple[GameOutput],
+                 first_round_table: tuple, second_round_table: tuple, total_table: tuple):
+        self.name: str = name
+        self.second_round: bool = second_round
+        self.next_game: GameOutput = next_game
+        self.all_games: tuple[GameOutput] = all_games
+        self.first_round_table: tuple[list] = first_round_table
+        self.second_round_table: tuple[list] | None = second_round_table
+        self.total_table: tuple[list] = total_table
+
+
 class League:
     def __init__(self, name: str, is_active: bool, is_second_round: bool, team_names: list[str]) -> None:
         self.name: str = name
@@ -85,25 +110,19 @@ class League:
     def _set_league_finished(self) -> None:
         self.finished = True
 
-    def get_output(self) -> list:
+    def get_output(self) -> LeagueOutput | bool:
         if self.finished:
-            return [self.finished]
-        # [league_name:str, second_round:bool,[game_name:str, team_1_name:str, team_2_name:str, game_day:int,
-        # first_round:bool, score_team_1:int, score_team_2:int, finished:bool], [[game_name:str, team_1_name:str,
-        # team_2_name:str, game_day:int, first_round:bool, score_team_1:int, score_team_2:int, finished:bool][next
-        # game]], [first_round_table:list],[second_round_table:list][total_table]]
+            return self.finished
         else:
-            output: list[str, bool, list[str, str, str, int, bool, int, int, bool],
-                         list[list[str, str, str, int, bool, int, int, bool]], list[list], list[list], list[list]] = [
-                self.name,
-                self.is_second_round,
-                self._get_next_game(),
-                self._get_all_games(),
-                self._get_round_tables(table_type=TableType.FIRST),
-                self._get_round_tables(table_type=TableType.SECOND),
-                self._get_total_table()
-            ]
-            return output
+            league_output: LeagueOutput = LeagueOutput(
+                name=self.name,
+                second_round=self.is_second_round,
+                next_game=self._get_next_game(),
+                all_games=self._get_all_games(),
+                first_round_table=self._get_round_tables(TableType.FIRST),
+                second_round_table=self._get_round_tables(TableType.SECOND),
+                total_table=self._get_total_table())
+            return league_output
 
     def _get_name_from_team(self, team_to_check: Team) -> str:
         for team in self.teams:
@@ -119,46 +138,38 @@ class League:
                 if team_1 == game.team_1 and team_2 == game.team_2 or team_1 == game.team_2 and team_2 == game.team_1:
                     return game
 
-    def _get_next_game(self) -> list:
-        current_game: str = ""
+    def _get_next_game(self) -> GameOutput | None:
+        current_game: Game | None = None
         for game in self.games:
             if not game.finished:
                 current_game: Game = game
-        if current_game == "":
+        if current_game is None:
             self._set_league_finished()
-            return [self.finished]
+            return None
         else:
-            next_game: list[str, str, str, int, bool, int, int, bool] = [
-                current_game.game_name,
-                self._get_name_from_team(team_to_check=current_game.team_1),
-                self._get_name_from_team(team_to_check=current_game.team_2),
-                current_game.game_day,
-                current_game.first_round,
-                current_game.score_team_1,
-                current_game.score_team_2,
-                current_game.finished
-            ]
+            next_game: GameOutput = GameOutput(
+                game_name=current_game.game_name,
+                team_1_name=self._get_name_from_team(current_game.team_1),
+                team_2_name=self._get_name_from_team(current_game.team_2),
+                game_day=current_game.game_day,
+                first_round=current_game.first_round)
             return next_game
 
-    def _get_all_games(self) -> list[list]:
-        all_games: list[list[str, str, str, int, bool, int, int, bool]] = list()
-        for game in self.games:
-            single_game: list[str, str, str, int, bool, int, int, bool] = [
-                game.game_name,
-                self._get_name_from_team(team_to_check=game.team_1),
-                self._get_name_from_team(team_to_check=game.team_2),
-                game.game_day,
-                game.first_round,
-                game.score_team_1,
-                game.score_team_2,
-                self.finished
-            ]
+    def _get_all_games(self) -> tuple[GameOutput]:
+        all_games: list[GameOutput] = list()
+        for current_game in self.games:
+            single_game: GameOutput = GameOutput(
+                game_name=current_game.game_name,
+                team_1_name=self._get_name_from_team(current_game.team_1),
+                team_2_name=self._get_name_from_team(current_game.team_2),
+                game_day=current_game.game_day,
+                first_round=current_game.first_round)
             all_games.append(single_game)
-        return all_games
+        return tuple(all_games)
 
-    def _get_round_tables(self, table_type: TableType) -> list:
+    def _get_round_tables(self, table_type: TableType) -> tuple[list[str]] | None:
         if table_type == TableType.SECOND and not self.is_second_round:
-            return [None]
+            return None
         table: list[list[str]] = list()
         headers: list[str] = ["Rang", "Spiele"]
         ranked_teams_with_stats: list[dict] = self._get_ranked_teams_with_stats_for_round_tables(table_type=table_type)
@@ -182,9 +193,9 @@ class League:
                         str(stats[Stats.COUNTER_GOALS]),
                         str(stats[Stats.BALANCE])])
             table.append(row)
-        return table
+        return tuple(table)
 
-    def _get_total_table(self) -> list[list]:
+    def _get_total_table(self) -> tuple[list[str]]:
         table: list[list[str]] = list()
         headers: list[str] = ["Rang", "Name", "Punkte", "Tor-diff", "Tore", "Gegentore", "Bilanz"]
         table.append(headers)
@@ -198,7 +209,7 @@ class League:
                               str(stats[Stats.COUNTER_GOALS]),
                               stats[Stats.BALANCE]]
             table.append(row)
-        return table
+        return tuple(table)
 
     def _get_ranked_teams_with_stats_for_round_tables(self, table_type: TableType) -> list[dict]:
         teams_with_stats = dict()
