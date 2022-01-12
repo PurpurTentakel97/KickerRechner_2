@@ -511,7 +511,7 @@ class InputWindow(BaseWindow):
                     team_output.append(team.name)
                 league_output: list[str, bool, bool, list[str]] = [
                     league.name if len(league.name) > 0 else "liga " + str(league.index + 1),
-                    league.second_round, league.active, team_output
+                    league.active, league.second_round, team_output
                 ]
                 output.append(league_output)
             self.close()
