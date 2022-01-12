@@ -5,7 +5,7 @@
 import sys
 
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, QLineEdit, QCheckBox, QPushButton, \
-    QHBoxLayout, QVBoxLayout, QMessageBox
+    QHBoxLayout, QVBoxLayout, QMessageBox, QWidget
 from PyQt5.QtGui import QColor
 
 from gui.base_window import BaseWindow
@@ -70,6 +70,8 @@ class InputWindow(BaseWindow):
         self._set_layout()
 
     def _create_initial_ui(self) -> None:
+        self.widget = QWidget()
+
         # Left
         self._league_lb = QLabel()
         self._league_list = QListWidget()
@@ -229,7 +231,8 @@ class InputWindow(BaseWindow):
         global_vbox.addLayout(up_hbox)
         global_vbox.addLayout(bottom_hbox)
 
-        self.setLayout(global_vbox)
+        self.widget.setLayout(global_vbox)
+        self.set_widget(self.widget)
 
         self.show()
 
@@ -259,7 +262,7 @@ class InputWindow(BaseWindow):
         team: TeamListItem = self._teams_list.currentItem()
         name: str = self._team_name_le.text()
         if name == team.name:
-            print("Keine Änderung des Teamnamen")  # TODO TO UI
+            self.set_status_bar("Keine Anderung des Teamnamen %s." % name)
         team.update_text(name)
         self._team_name_le.clear()
         self._teams_list.setCurrentItem(None)
