@@ -2,19 +2,60 @@
 # 12.01.2022
 # KickerRechner // Main Window
 
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QTableWidget, QTabWidget, \
-    QHBoxLayout, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
+    QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
 
 from gui.base_window import BaseWindow
-from logic.league import LeagueOutput
+from logic.league import LeagueOutput, GameOutput
+
+
+class LeagueListItem(QListWidgetItem):
+    def __init__(self, index: int, league_name: str, finished: bool = False):
+        super().__init__()
+        self.index: int = index
+        self.league_name: str = league_name
+        self.finished: bool = finished
+
+        self.first_round_days: list[DayListItem] = list()
+        self.second_round_days: list[DayListItem] = list()
+
+
+class DayListItem(QListWidgetItem):
+    def __init__(self, game_day: int, index: int, first_round_bool, league_name: str):
+        super().__init__()
+        self.game_day: int = game_day
+        self.index: int = index
+        self.first_round_bool: bool = first_round_bool
+        self.league_name: str = league_name
+
+        self.game_list: list[GameListItem] = list()
+
+
+class GameListItem(QListWidgetItem):
+    def __init__(self, index: int, league_name: str, game_name: str, team_1_name: str, team_2_name: str, game_day: int,
+                 first_round: bool, score_team_1: int, score_team_2: int, finished: bool):
+        super().__init__()
+        self.index: int = index
+        self.league_name: str = league_name
+        self.game_name: str = game_name
+        self.team_1_name: str = team_1_name
+        self.team_2_name: str = team_2_name
+        self.game_day: int = game_day
+        self.first_round: bool = first_round
+        self.score_team_1: int = score_team_1
+        self.score_team_2: int = score_team_2
+        self.finished: bool = finished
 
 
 class MainWindow(BaseWindow):
     def __init__(self, initial_input: tuple[LeagueOutput]):
         super().__init__()
+        self._input = initial_input
+        self.next_game: GameOutput | None = None
 
         self._create_initial_ui()
         self._create_initial_text()
+        self._create_first_next_game()
         self._create_initial_layout()
 
     def _create_initial_ui(self):
@@ -60,10 +101,6 @@ class MainWindow(BaseWindow):
 
         # Top Right next game
         self._next_game_lb.setText("Nächstes Spiel:")
-        self._team_1_lb.setText("Anita Becker - Anton Fritzen")
-        self._team_2_lb.setText("Maria Müller - Herbert Haberich")
-        self._score_1_le.setPlaceholderText("Score Team 1")
-        self._score_2_le.setPlaceholderText("Score Team 2")
         self._add_score_btn.setText("Ergebnis hinzufügen")
 
     def _create_initial_layout(self):
@@ -123,6 +160,13 @@ class MainWindow(BaseWindow):
         self.set_widget(widget=self.widget)
 
         self.show()
+
+    def _create_first_next_game(self):
+        self.next_game: GameOutput = self._input[0].next_game
+        self._team_1_lb.setText(self.next_game.team_1_name + ":")
+        self._team_2_lb.setText(self.next_game.team_2_name + ":")
+        self._score_1_le.setPlaceholderText("Score " + self.next_game.team_1_name)
+        self._score_2_le.setPlaceholderText("Score " + self.next_game.team_2_name)
 
     def _add_tabs_to_game_tabs(self):
         first_widget = QWidget()
