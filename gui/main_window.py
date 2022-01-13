@@ -10,7 +10,7 @@ from logic.league import LeagueOutput, GameOutput
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, league_name: str, finished: bool = False):
+    def __init__(self, league_name: str, finished: bool = False) -> None:
         super().__init__()
         self.league_name: str = league_name
         self.finished: bool = finished
@@ -18,9 +18,14 @@ class LeagueListItem(QListWidgetItem):
         self.first_round_days: list[DayListItem] = list()
         self.second_round_days: list[DayListItem] = list()
 
+        self._crate_text()
+
+    def _crate_text(self) -> None:
+        self.setText(self.league_name)
+
 
 class DayListItem(QListWidgetItem):
-    def __init__(self, game_day: int, first_round_bool, league_name: str):
+    def __init__(self, game_day: int, first_round_bool, league_name: str) -> None:
         super().__init__()
         self.game_day: int = game_day
         self.first_round_bool: bool = first_round_bool
@@ -28,10 +33,15 @@ class DayListItem(QListWidgetItem):
 
         self.games: list[GameListItem] = list()
 
+        self._create_text()
+
+    def _create_text(self) -> None:
+        self.setText("Spieltag " + str(self.game_day))
+
 
 class GameListItem(QListWidgetItem):
     def __init__(self, league_name: str, game_name: str, team_1_name: str, team_2_name: str, game_day: int,
-                 first_round: bool, score_team_1: int, score_team_2: int, finished: bool):
+                 first_round: bool, score_team_1: int, score_team_2: int, finished: bool) -> None:
         super().__init__()
         self.league_name: str = league_name
         self.game_name: str = game_name
@@ -42,6 +52,17 @@ class GameListItem(QListWidgetItem):
         self.score_team_1: int = score_team_1
         self.score_team_2: int = score_team_2
         self.finished: bool = finished
+
+        self._create_text()
+
+    def _create_text(self) -> None:
+        if self.finished:
+            self.setText(self.game_name + "//" + str(self.score_team_1) + ":" + str(self.score_team_2))
+        else:
+            self.setText(self.game_name)
+
+    def update_text(self) -> None:
+        self._create_text()
 
 
 class MainWindow(BaseWindow):
