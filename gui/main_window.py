@@ -10,9 +10,8 @@ from logic.league import LeagueOutput, GameOutput
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, index: int, league_name: str, finished: bool = False):
+    def __init__(self, league_name: str, finished: bool = False):
         super().__init__()
-        self.index: int = index
         self.league_name: str = league_name
         self.finished: bool = finished
 
@@ -21,21 +20,19 @@ class LeagueListItem(QListWidgetItem):
 
 
 class DayListItem(QListWidgetItem):
-    def __init__(self, game_day: int, index: int, first_round_bool, league_name: str):
+    def __init__(self, game_day: int, first_round_bool, league_name: str):
         super().__init__()
         self.game_day: int = game_day
-        self.index: int = index
         self.first_round_bool: bool = first_round_bool
         self.league_name: str = league_name
 
-        self.game_list: list[GameListItem] = list()
+        self.games: list[GameListItem] = list()
 
 
 class GameListItem(QListWidgetItem):
-    def __init__(self, index: int, league_name: str, game_name: str, team_1_name: str, team_2_name: str, game_day: int,
+    def __init__(self, league_name: str, game_name: str, team_1_name: str, team_2_name: str, game_day: int,
                  first_round: bool, score_team_1: int, score_team_2: int, finished: bool):
         super().__init__()
-        self.index: int = index
         self.league_name: str = league_name
         self.game_name: str = game_name
         self.team_1_name: str = team_1_name
@@ -51,7 +48,8 @@ class MainWindow(BaseWindow):
     def __init__(self, initial_input: tuple[LeagueOutput]):
         super().__init__()
         self._input = initial_input
-        self.next_game: GameOutput | None = None
+        self._leagues: list[LeagueListItem] = list()
+        self._next_game: GameOutput | None = None
 
         self._create_initial_ui()
         self._create_initial_text()
@@ -162,11 +160,31 @@ class MainWindow(BaseWindow):
         self.show()
 
     def _create_first_next_game(self):
-        self.next_game: GameOutput = self._input[0].next_game
-        self._team_1_lb.setText(self.next_game.team_1_name + ":")
-        self._team_2_lb.setText(self.next_game.team_2_name + ":")
-        self._score_1_le.setPlaceholderText("Score " + self.next_game.team_1_name)
-        self._score_2_le.setPlaceholderText("Score " + self.next_game.team_2_name)
+        self._next_game: GameOutput = self._input[0].next_game
+        self._team_1_lb.setText(self._next_game.team_1_name + ":")
+        self._team_2_lb.setText(self._next_game.team_2_name + ":")
+        self._score_1_le.setPlaceholderText("Score " + self._next_game.team_1_name)
+        self._score_2_le.setPlaceholderText("Score " + self._next_game.team_2_name)
+
+    def _create_first_leagues(self):
+        for league in self._input:
+            league_item: LeagueListItem = LeagueListItem(league_name=league.name)
+            self._leagues.append(league_item)
+            for game in league.all_games:
+                day_item: DayListItem = DayListItem(game_day=game.game_day, first_round_bool=game.first_round,
+                                                    league_name=league.name)
+                if game.first_round:
+                    league_item.first_round_days.append(day_item)
+
+                else:
+                    league_item.second_round_days.append(day_item)
+
+                game_item: GameListItem = GameListItem(league_name=league.name, game_name=game.game_name,
+                                                       team_1_name=game.team_1_name, team_2_name=game.team_2_name,
+                                                       game_day=game.game_day, first_round=game.first_round,
+                                                       score_team_1=game.score_team_1, score_team_2=game.score_team_2,
+                                                       finished=game.finished)
+                day_item.games.append(game_item)
 
     def _add_tabs_to_game_tabs(self):
         first_widget = QWidget()
