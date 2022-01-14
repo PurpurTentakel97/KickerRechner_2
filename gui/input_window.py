@@ -95,17 +95,17 @@ class InputWindow(BaseWindow):
         self._team_name_le.returnPressed.connect(self._add_edit_team_by_enter)
         self._edit_team_btn = QPushButton()
         self._edit_team_btn.setEnabled(False)
-        self._edit_team_btn.pressed.connect(self._set_new_current_team_name)
+        self._edit_team_btn.clicked.connect(self._set_new_current_team_name)
 
         self._add_team_btn = QPushButton()
         self._add_team_btn.setEnabled(False)
-        self._add_team_btn.pressed.connect(self._add_team_to_current_league)
+        self._add_team_btn.clicked.connect(self._add_team_to_current_league)
         self._remove_team_btn = QPushButton()
         self._remove_team_btn.setEnabled(False)
-        self._remove_team_btn.pressed.connect(self._remove_team_from_current_league)
+        self._remove_team_btn.clicked.connect(self._remove_team_from_current_league)
         self._remove_all_teams_btn = QPushButton()
         self._remove_all_teams_btn.setEnabled(False)
-        self._remove_all_teams_btn.pressed.connect(self._remove_all_teams_from_current_league)
+        self._remove_all_teams_btn.clicked.connect(self._remove_all_teams_from_current_league)
 
         self._teams_list_lb = QLabel()
         self._teams_list = QListWidget()
@@ -113,15 +113,15 @@ class InputWindow(BaseWindow):
 
         # Bottom
         self._remove_all_leagues_btn = QPushButton()
-        self._remove_all_leagues_btn.pressed.connect(self._remove_all_leagues)
+        self._remove_all_leagues_btn.clicked.connect(self._remove_all_leagues)
         self._remove_league_btn = QPushButton()
-        self._remove_league_btn.pressed.connect(self._remove_league)
+        self._remove_league_btn.clicked.connect(self._remove_league)
         self._add_league_btn = QPushButton()
-        self._add_league_btn.pressed.connect(self._add_league)
+        self._add_league_btn.clicked.connect(self._add_league)
 
         self._start_btn = QPushButton()
         self._start_btn.setEnabled(False)
-        self._start_btn.pressed.connect(self._start)
+        self._start_btn.clicked.connect(self._start)
 
     def _create_initial_league(self) -> None:
         league = LeagueListItem(len(self.leagues))

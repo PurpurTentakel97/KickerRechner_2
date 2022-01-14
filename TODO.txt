@@ -4,6 +4,3 @@
 
 - input window:
     - set initial focus in league_name if new league else team_name
-
-- main window
-    - double input
