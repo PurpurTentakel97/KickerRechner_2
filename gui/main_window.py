@@ -3,20 +3,20 @@
 # KickerRechner // Main Window
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
-    QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
+    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
 
 from gui.base_window import BaseWindow
+from gui.enum_sheet import TableType, ListType
 from logic.league import LeagueOutput, GameOutput
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, league_name: str, finished: bool = False) -> None:
+    def __init__(self, index: int, league_name: str) -> None:
         super().__init__()
+        self.index: int = index
         self.league_name: str = league_name
-        self.finished: bool = finished
-
-        self.first_round_days: list[DayListItem] = list()
-        self.second_round_days: list[DayListItem] = list()
+        self.first_round_games: list[GameOutput] = list()
+        self.second_round_games: list[GameOutput] = list()
 
         self._crate_text()
 
@@ -25,13 +25,10 @@ class LeagueListItem(QListWidgetItem):
 
 
 class DayListItem(QListWidgetItem):
-    def __init__(self, game_day: int, first_round_bool, league_name: str) -> None:
+    def __init__(self, game_day: int, league_name: str) -> None:
         super().__init__()
         self.game_day: int = game_day
-        self.first_round_bool: bool = first_round_bool
         self.league_name: str = league_name
-
-        self.games: list[GameListItem] = list()
 
         self._create_text()
 
@@ -40,15 +37,10 @@ class DayListItem(QListWidgetItem):
 
 
 class GameListItem(QListWidgetItem):
-    def __init__(self, league_name: str, game_name: str, team_1_name: str, team_2_name: str, game_day: int,
-                 first_round: bool, score_team_1: int, score_team_2: int, finished: bool) -> None:
+    def __init__(self, league_name: str, game_name: str, score_team_1: int, score_team_2: int, finished: bool) -> None:
         super().__init__()
         self.league_name: str = league_name
         self.game_name: str = game_name
-        self.team_1_name: str = team_1_name
-        self.team_2_name: str = team_2_name
-        self.game_day: int = game_day
-        self.first_round: bool = first_round
         self.score_team_1: int = score_team_1
         self.score_team_2: int = score_team_2
         self.finished: bool = finished
@@ -66,18 +58,20 @@ class GameListItem(QListWidgetItem):
 
 
 class MainWindow(BaseWindow):
-    def __init__(self, initial_input: tuple[LeagueOutput]):
+    def __init__(self, initial_input: tuple[LeagueOutput]) -> None:
         super().__init__()
-        self._input = initial_input
-        self._leagues: list[LeagueListItem] = list()
+        self._leagues = initial_input
+        print(self._leagues)
+        self._league_list_items: list[LeagueListItem] = list()
         self._next_game: GameOutput | None = None
+        self._next_league_index: int = 0
 
         self._create_initial_ui()
         self._create_initial_text()
-        self._create_first_next_game()
+        self._create_leagues()
         self._create_initial_layout()
 
-    def _create_initial_ui(self):
+    def _create_initial_ui(self) -> None:
         self.widget = QWidget()
 
         # Top Left
@@ -90,10 +84,10 @@ class MainWindow(BaseWindow):
         self._second_day_game_hbox = QHBoxLayout()  # Rückrunde
         self._add_tabs_to_game_tabs()
 
-        self._first_day_list = QListWidget()
-        self._first_game_list = QListWidget()
-        self._second_day_list = QListWidget()
-        self._second_game_list = QListWidget()
+        self._day_list = QListWidget()
+        self._game_list = QListWidget()
+        self._dummy_day_list = QListWidget()
+        self._dummy_game_list = QListWidget()
 
         # Top Right next game
         self._next_game_lb = QLabel()
@@ -102,6 +96,7 @@ class MainWindow(BaseWindow):
         self._score_1_le = QLineEdit()
         self._score_2_le = QLineEdit()
         self._add_score_btn = QPushButton()
+        self._add_score_btn.setEnabled(False)
 
         # Bottom
         self._table_lb = QLabel()
@@ -111,7 +106,7 @@ class MainWindow(BaseWindow):
         self._total_table = QTableWidget()
         self._add_tabs_to_table_tabs()
 
-    def _create_initial_text(self):
+    def _create_initial_text(self) -> None:
         # Top Left
         self._league_lb.setText("Ligen:")
 
@@ -122,7 +117,7 @@ class MainWindow(BaseWindow):
         self._next_game_lb.setText("Nächstes Spiel:")
         self._add_score_btn.setText("Ergebnis hinzufügen")
 
-    def _create_initial_layout(self):
+    def _create_initial_layout(self) -> None:
         # Top Left
         league_lb_hbox = QHBoxLayout()
         league_lb_hbox.addWidget(self._league_lb)
@@ -135,12 +130,12 @@ class MainWindow(BaseWindow):
         # Top Right games
         # game_tabs
         # created in UI
-        self._first_day_game_hbox.addWidget(self._first_day_list)
-        self._first_day_game_hbox.addWidget(self._first_game_list)
+        self._first_day_game_hbox.addWidget(self._day_list)
+        self._first_day_game_hbox.addWidget(self._game_list)
 
         # created in UI
-        self._second_day_game_hbox.addWidget(self._second_day_list)
-        self._second_day_game_hbox.addWidget(self._second_game_list)
+        self._second_day_game_hbox.addWidget(self._dummy_day_list)
+        self._second_day_game_hbox.addWidget(self._dummy_game_list)
 
         # Top Right next game
         next_game_lb_hbox = QHBoxLayout()
@@ -180,34 +175,20 @@ class MainWindow(BaseWindow):
 
         self.show()
 
-    def _create_first_next_game(self):
-        self._next_game: GameOutput = self._input[0].next_game
-        self._team_1_lb.setText(self._next_game.team_1_name + ":")
-        self._team_2_lb.setText(self._next_game.team_2_name + ":")
-        self._score_1_le.setPlaceholderText("Score " + self._next_game.team_1_name)
-        self._score_2_le.setPlaceholderText("Score " + self._next_game.team_2_name)
-
-    def _create_first_leagues(self):
-        for league in self._input:
-            league_item: LeagueListItem = LeagueListItem(league_name=league.name)
-            self._leagues.append(league_item)
+    def _create_leagues(self) -> None:
+        self._clear_ui_list(ListType.LEAGUE)
+        for index, league in enumerate(self._leagues):
+            league_item: LeagueListItem = LeagueListItem(index=index, league_name=league.name)
+            self._league_list_items.append(league_item)
+            self._add_item_to_ui_list(list_type=ListType.LEAGUE, list_item=league_item)
             for game in league.all_games:
-                day_item: DayListItem = DayListItem(game_day=game.game_day, first_round_bool=game.first_round,
-                                                    league_name=league.name)
                 if game.first_round:
-                    league_item.first_round_days.append(day_item)
-
+                    league_item.first_round_games.append(game)
                 else:
-                    league_item.second_round_days.append(day_item)
+                    league_item.second_round_games.append(game)
+        self._league_list.setCurrentItem(self._league_list_items[self._next_league_index])
 
-                game_item: GameListItem = GameListItem(league_name=league.name, game_name=game.game_name,
-                                                       team_1_name=game.team_1_name, team_2_name=game.team_2_name,
-                                                       game_day=game.game_day, first_round=game.first_round,
-                                                       score_team_1=game.score_team_1, score_team_2=game.score_team_2,
-                                                       finished=game.finished)
-                day_item.games.append(game_item)
-
-    def _add_tabs_to_game_tabs(self):
+    def _add_tabs_to_game_tabs(self) -> None:
         first_widget = QWidget()
         first_widget.setLayout(self._first_day_game_hbox)
         self._game_tabs.addTab(first_widget, "Hinrunde")
@@ -215,10 +196,48 @@ class MainWindow(BaseWindow):
         second_widget.setLayout(self._second_day_game_hbox)
         self._game_tabs.addTab(second_widget, "Rückrunde")
 
-    def _add_tabs_to_table_tabs(self):
+    def _add_tabs_to_table_tabs(self) -> None:
         self._table_tabs.addTab(self._first_round_table, "Hinrunde")
         self._table_tabs.addTab(self._second_round_table, "Rückrunde")
         self._table_tabs.addTab(self._total_table, "Gesamt")
+
+    def _add_item_to_ui_list(self, list_type: ListType, list_item: QListWidgetItem) -> None:
+        match list_type:
+            case ListType.LEAGUE:
+                self._league_list.addItem(list_item)
+            case ListType.DAY:
+                self._day_list.addItem(list_item)
+                self._dummy_day_list.addItem(list_item)
+            case ListType.GAME:
+                self._game_list.addItem(list_item)
+                self._dummy_game_list.addItem(list_item)
+
+    def _set_second_round(self, league: LeagueOutput) -> None:
+        self._game_tabs.setTabEnabled(1, league.second_round)
+        self._table_tabs.setTabEnabled(1, league.second_round)
+
+    def _set_ui_list_item(self, list_type: ListType, list_item: QListWidgetItem) -> None:
+        match list_type:
+            case ListType.LEAGUE:
+                self._league_list.setCurrentItem(list_item)
+            case ListType.DAY:
+                self._day_list.setCurrentItem(list_item)
+                self._dummy_day_list.setCurrentItem(list_item)
+            case ListType.GAME:
+                self._game_list.setCurrentItem(list_item)
+                self._dummy_game_list.setCurrentItem(list_item)
+
+    def _clear_ui_list(self, list_type: ListType) -> None:
+        match list_type:
+            case ListType.LEAGUE:
+                self._league_list.clear()
+                self._league_list_items.clear()
+            case ListType.DAY:
+                self._day_list.clear()
+                self._dummy_day_list.clear()
+            case ListType.GAME:
+                self._game_list.clear()
+                self._dummy_game_list.clear()
 
 
 window: MainWindow | None = None

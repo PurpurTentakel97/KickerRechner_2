@@ -5,5 +5,5 @@
 - input window:
     - set initial focus in league_name if new league else team_name
 
-- default window:
-    - set information at bottom window
+- main window
+    - double input
