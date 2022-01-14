@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget
     QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
 
 from gui.base_window import BaseWindow
-from gui.enum_sheet import ListType
+from gui.enum_sheet import ListType, TableType
 from logic.league import LeagueOutput, GameOutput
 
 
@@ -237,6 +237,9 @@ class MainWindow(BaseWindow):
 
         self._set_second_round(league)
         self._set_day()
+        self._set_tables(TableType.FIRST)
+        self._set_tables(TableType.SECOND)
+        self._set_tables(TableType.TOTAL)
 
     def _set_day(self):
         league_item, league = self._get_right_league()
@@ -277,6 +280,34 @@ class MainWindow(BaseWindow):
         else:
             self._add_score_btn.setText("Ergebnis hinzufügen")
             self._next_game_lb.setText("Nächstes Spiel:")
+
+    def _set_tables(self, table_type: TableType):
+        league_item: LeagueListItem
+        league: LeagueOutput
+        league_item, league = self._get_right_league()
+
+        dummy_list: tuple[list] = tuple()
+        dummy: QTableWidget | None = None
+        match table_type:
+            case TableType.FIRST:
+                dummy_list: tuple[list] = league.first_round_table
+                dummy: QTableWidget = self._first_round_table
+            case TableType.SECOND:
+                if not league.second_round:
+                    return
+                dummy_list: tuple[list] = league.second_round_table
+                dummy: QTableWidget = self._second_round_table
+            case TableType.TOTAL:
+                dummy_list: tuple[list] = league.total_table
+                dummy: QTableWidget = self._total_table
+
+        dummy.setRowCount(len(dummy_list))
+        dummy.setColumnCount(len(dummy_list[0]))
+
+        for row, _ in enumerate(dummy_list):
+            for column, item in enumerate(dummy_list[row]):
+                dummy.setItem(row, column, QTableWidgetItem(item))
+        dummy.update()
 
     def _set_second_round(self, league: LeagueOutput) -> None:
         self._game_tabs.setTabEnabled(1, league.second_round)
