@@ -63,7 +63,7 @@ class MainWindow(BaseWindow):
         self._leagues = initial_input
         print(self._leagues)
         self._league_list_items: list[LeagueListItem] = list()
-        self._next_game: GameOutput | None = None
+        self._current_game: GameOutput | None = None
         self._next_league_index: int = 0
 
         self._create_initial_ui()
@@ -179,14 +179,14 @@ class MainWindow(BaseWindow):
         self._clear_ui_list(ListType.LEAGUE)
         for index, league in enumerate(self._leagues):
             league_item: LeagueListItem = LeagueListItem(index=index, league_name=league.name)
-            self._league_list_items.append(league_item)
-            self._add_item_to_ui_list(list_type=ListType.LEAGUE, list_item=league_item)
+            self._add_item_to_ui_list(list_type=ListType.LEAGUE, list_item_1=league_item)
             for game in league.all_games:
                 if game.first_round:
                     league_item.first_round_games.append(game)
                 else:
                     league_item.second_round_games.append(game)
         self._league_list.setCurrentItem(self._league_list_items[self._next_league_index])
+        self._set_current_league()
 
     def _add_tabs_to_game_tabs(self) -> None:
         first_widget = QWidget()
@@ -201,31 +201,56 @@ class MainWindow(BaseWindow):
         self._table_tabs.addTab(self._second_round_table, "Rückrunde")
         self._table_tabs.addTab(self._total_table, "Gesamt")
 
-    def _add_item_to_ui_list(self, list_type: ListType, list_item: QListWidgetItem) -> None:
+    def _add_item_to_ui_list(self, list_type: ListType, list_item_1: QListWidgetItem,
+                             list_item_2: QListWidgetItem = None) -> None:
         match list_type:
             case ListType.LEAGUE:
-                self._league_list.addItem(list_item)
+                self._league_list.addItem(list_item_1)
+                self._league_list_items.append(list_item_1)
             case ListType.DAY:
-                self._day_list.addItem(list_item)
-                self._dummy_day_list.addItem(list_item)
+                self._day_list.addItem(list_item_1)
+                self._dummy_day_list.addItem(list_item_2)
             case ListType.GAME:
-                self._game_list.addItem(list_item)
-                self._dummy_game_list.addItem(list_item)
+                self._game_list.addItem(list_item_1)
+                self._dummy_game_list.addItem(list_item_2)
+
+    def _set_current_league(self) -> None:
+        self._current_game: None = None
+        league_item: LeagueListItem = self._league_list.currentItem()
+        league: LeagueOutput = self._leagues[league_item.index]
+
+        dummy_list: list[GameOutput] = list()
+        match league.next_game.first_round:
+            case True:
+                dummy_list: list[GameOutput] = league_item.first_round_games
+            case False:
+                dummy_list: list[GameOutput] = league_item.second_round_games
+
+        count: int = 0
+        for game in dummy_list:
+            if count < game.game_day:
+                new_day_1: DayListItem = DayListItem(game_day=game.game_day, league_name=league.name)
+                new_day_2: DayListItem = DayListItem(game_day=game.game_day, league_name=league.name)
+                self._add_item_to_ui_list(list_type=ListType.DAY, list_item_1=new_day_1, list_item_2=new_day_2)
+                count += 1
+                if new_day_1.game_day == league.next_game.game_day:
+                    self._set_ui_list_item(list_type=ListType.DAY, list_item_1=new_day_1, list_item_2=new_day_2)
 
     def _set_second_round(self, league: LeagueOutput) -> None:
         self._game_tabs.setTabEnabled(1, league.second_round)
         self._table_tabs.setTabEnabled(1, league.second_round)
 
-    def _set_ui_list_item(self, list_type: ListType, list_item: QListWidgetItem) -> None:
+    def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem,
+                          list_item_2: QListWidgetItem = None) -> None:
         match list_type:
             case ListType.LEAGUE:
-                self._league_list.setCurrentItem(list_item)
+                self._league_list.setCurrentItem(list_item_1)
             case ListType.DAY:
-                self._day_list.setCurrentItem(list_item)
-                self._dummy_day_list.setCurrentItem(list_item)
+                self._day_list.setCurrentItem(list_item_1)
+                self._dummy_day_list.setCurrentItem(list_item_2)
             case ListType.GAME:
-                self._game_list.setCurrentItem(list_item)
-                self._dummy_game_list.setCurrentItem(list_item)
+                self._game_list.setCurrentItem(list_item_1)
+                self._dummy_game_list.setCurrentItem(list_item_2)
 
     def _clear_ui_list(self, list_type: ListType) -> None:
         match list_type:
