@@ -21,10 +21,12 @@ class GameOutput:
 
 
 class LeagueOutput:
-    def __init__(self, name: str, second_round: bool, next_game: GameOutput, all_games: tuple[GameOutput],
+    def __init__(self, name: str, second_round: bool, finished: bool, next_game: GameOutput,
+                 all_games: tuple[GameOutput],
                  first_round_table: tuple, second_round_table: tuple, total_table: tuple):
         self.name: str = name
         self.second_round: bool = second_round
+        self.finished: bool = finished
         self.next_game: GameOutput = next_game
         self.all_games: tuple[GameOutput] = all_games
         self.first_round_table: tuple[list] = first_round_table
@@ -117,6 +119,7 @@ class League:
             league_output: LeagueOutput = LeagueOutput(
                 name=self.name,
                 second_round=self.is_second_round,
+                finished=self.finished,
                 next_game=self._get_next_game(),
                 all_games=self._get_all_games(),
                 first_round_table=self._get_round_tables(TableType.FIRST),
@@ -143,6 +146,7 @@ class League:
         for game in self.games:
             if not game.finished:
                 current_game: Game = game
+                break
         if current_game is None:
             self._set_league_finished()
             return None
