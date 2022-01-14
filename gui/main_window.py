@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget
     QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
 
 from gui.base_window import BaseWindow
-from gui.enum_sheet import TableType, ListType
+from gui.enum_sheet import ListType
 from logic.league import LeagueOutput, GameOutput
 
 
@@ -186,7 +186,7 @@ class MainWindow(BaseWindow):
                 else:
                     league_item.second_round_games.append(game)
         self._league_list.setCurrentItem(self._league_list_items[self._next_league_index])
-        self._set_current_league()
+        self._set_league()
 
     def _add_tabs_to_game_tabs(self) -> None:
         first_widget = QWidget()
@@ -214,10 +214,9 @@ class MainWindow(BaseWindow):
                 self._game_list.addItem(list_item_1)
                 self._dummy_game_list.addItem(list_item_2)
 
-    def _set_current_league(self) -> None:
+    def _set_league(self) -> None:
         self._current_game: None = None
-        league_item: LeagueListItem = self._league_list.currentItem()
-        league: LeagueOutput = self._leagues[league_item.index]
+        league_item, league = self._get_right_league()
 
         dummy_list: list[GameOutput] = list()
         match league.next_game.first_round:
@@ -235,6 +234,49 @@ class MainWindow(BaseWindow):
                 count += 1
                 if new_day_1.game_day == league.next_game.game_day:
                     self._set_ui_list_item(list_type=ListType.DAY, list_item_1=new_day_1, list_item_2=new_day_2)
+
+        self._set_second_round(league)
+        self._set_day()
+
+    def _set_day(self):
+        league_item, league = self._get_right_league()
+
+        current_game = self._get_right_game()
+        if current_game.first_round:
+            current_round: list[GameOutput] = league_item.first_round_games
+        else:
+            current_round: list[GameOutput] = league_item.second_round_games
+
+        for game in current_round:
+            if game.game_day != current_game.game_day:
+                continue
+            new_game_1: GameListItem = GameListItem(league_name=league.name, game_name=game.game_name,
+                                                    score_team_1=game.score_team_1, score_team_2=game.score_team_2,
+                                                    finished=game.finished)
+            new_game_2: GameListItem = GameListItem(league_name=league.name, game_name=game.game_name,
+                                                    score_team_1=game.score_team_1, score_team_2=game.score_team_2,
+                                                    finished=game.finished)
+            self._add_item_to_ui_list(list_type=ListType.GAME, list_item_1=new_game_1, list_item_2=new_game_2)
+            if new_game_1.game_name == current_game.game_name:
+                self._set_ui_list_item(list_type=ListType.GAME, list_item_1=new_game_1, list_item_2=new_game_2)
+        self._set_next_game()
+
+    def _set_next_game(self):
+        current_game = self._get_right_game()
+
+        self._team_1_lb.setText(current_game.team_1_name)
+        self._team_2_lb.setText(current_game.team_2_name)
+        self._score_1_le.setPlaceholderText("Tore: " + current_game.team_1_name)
+        self._score_2_le.setPlaceholderText("Tore: " + current_game.team_2_name)
+
+        if current_game.finished:
+            self._add_score_btn.setText("Ergebnis ändern")
+            self._next_game_lb.setText("Spiel bearbeiten:")
+            self._score_1_le.setText(current_game.score_team_1)
+            self._score_2_le.setText(current_game.score_team_2)
+        else:
+            self._add_score_btn.setText("Ergebnis hinzufügen")
+            self._next_game_lb.setText("Nächstes Spiel:")
 
     def _set_second_round(self, league: LeagueOutput) -> None:
         self._game_tabs.setTabEnabled(1, league.second_round)
@@ -263,6 +305,19 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.clear()
                 self._dummy_game_list.clear()
+
+    def _get_right_league(self) -> list[LeagueListItem, LeagueOutput]:
+        league_item: LeagueListItem = self._league_list.currentItem()
+        league: LeagueOutput = self._leagues[league_item.index]
+        return [league_item, league]
+
+    def _get_right_game(self) -> GameOutput:
+        _, league = self._get_right_league()
+        if self._current_game is not None:
+            current_game: GameOutput = self._current_game
+        else:
+            current_game: GameOutput = league.next_game
+        return current_game
 
 
 window: MainWindow | None = None
