@@ -1,6 +1,7 @@
 # Purpur Tentakel
 # 09.01.2022
 # KickerRechner // League
+from typing import Tuple
 
 from logic.team import Team
 from logic.game import Game
@@ -116,12 +117,15 @@ class League:
         if self.finished:
             return self.finished
         else:
+            next_game: GameOutput
+            all_games: tuple[GameOutput]
+            next_game, all_games = self._get_all_games()
             league_output: LeagueOutput = LeagueOutput(
                 name=self.name,
                 second_round=self.is_second_round,
                 finished=self.finished,
-                next_game=self._get_next_game(),
-                all_games=self._get_all_games(),
+                next_game=next_game,
+                all_games=all_games,
                 first_round_table=self._get_round_tables(TableType.FIRST),
                 second_round_table=self._get_round_tables(TableType.SECOND),
                 total_table=self._get_total_table())
@@ -141,26 +145,9 @@ class League:
                 if team_1 == game.team_1 and team_2 == game.team_2 or team_1 == game.team_2 and team_2 == game.team_1:
                     return game
 
-    def _get_next_game(self) -> GameOutput | None:
-        current_game: Game | None = None
-        for game in self.games:
-            if not game.finished:
-                current_game: Game = game
-                break
-        if current_game is None:
-            self._set_league_finished()
-            return None
-        else:
-            next_game: GameOutput = GameOutput(
-                game_name=current_game.game_name,
-                team_1_name=self._get_name_from_team(current_game.team_1),
-                team_2_name=self._get_name_from_team(current_game.team_2),
-                game_day=current_game.game_day,
-                first_round=current_game.first_round)
-            return next_game
-
-    def _get_all_games(self) -> tuple[GameOutput]:
+    def _get_all_games(self) -> tuple[GameOutput, tuple[GameOutput]]:
         all_games: list[GameOutput] = list()
+        next_game: GameOutput | None = None
         for current_game in self.games:
             single_game: GameOutput = GameOutput(
                 game_name=current_game.game_name,
@@ -169,7 +156,11 @@ class League:
                 game_day=current_game.game_day,
                 first_round=current_game.first_round)
             all_games.append(single_game)
-        return tuple(all_games)
+            if next_game is None and not current_game.finished:
+                next_game = single_game
+
+        output: tuple[GameOutput, tuple[GameOutput]] = (next_game, tuple(all_games))
+        return output
 
     def _get_round_tables(self, table_type: TableType) -> tuple[list[str]] | None:
         if table_type == TableType.SECOND and not self.is_second_round:
