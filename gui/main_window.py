@@ -70,8 +70,10 @@ class MainWindow(BaseWindow):
 
         self._create_initial_ui()
         self._create_initial_text()
-        self._create_leagues()
         self._create_initial_layout()
+
+        self._create_leagues()
+        self._set_next_league()
 
     def _create_initial_ui(self) -> None:
         self.widget = QWidget()
@@ -211,6 +213,7 @@ class MainWindow(BaseWindow):
                 new_day: DayListItem = DayListItem(game_day=game.game_day, league_name=league_item.league_name,
                                                    first_round=game.first_round)
                 self._day_list.addItem(new_day)
+                counter += 1
                 if current_game in games and current_game.game_day == game.game_day:
                     self._day_list.setCurrentItem(new_day)
                     day_set: bool = True
@@ -251,6 +254,13 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
 
+    def _set_next_league(self):
+        current_game: GameOutput = self._get_current_game()
+        self._create_days(current_game.first_round)
+        self._create_games(current_game.first_round)
+        self._set_next_game()
+        self._set_second_round()
+
     def _set_next_game(self):
         self._score_1_le.clear()
         self._score_2_le.clear()
@@ -271,6 +281,13 @@ class MainWindow(BaseWindow):
             self._add_score_btn.setText("Ergebnis eintragen")
 
         self._set_add_score_btn()
+
+    def _set_second_round(self):
+        league_item: LeagueListItem = self._get_current_league()
+        if not league_item.league.second_round and self._table_tabs.currentIndex() == 1:
+            self._table_tabs.setCurrentIndex(0)
+        self._second_round_btn.setEnabled(league_item.league.second_round)
+        self._table_tabs.setTabEnabled(1, league_item.league.second_round)
 
     def _set_add_score_btn(self):
         self._add_score_btn.setEnabled(self._is_valid_input())
@@ -304,12 +321,11 @@ class MainWindow(BaseWindow):
         if self._current_game is not None:
             return self._current_game
         else:
-            league: LeagueOutput
-            _, league = self._get_current_league()
-            return league.next_game
+            league_item: LeagueListItem = self._get_current_league()
+            return league_item.league.next_game
 
     def _is_valid_input(self) -> bool:
-        pass
+        return False
 
 
 window: MainWindow | None = None
