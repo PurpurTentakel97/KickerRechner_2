@@ -239,6 +239,19 @@ class MainWindow(BaseWindow):
                 self._game_list.clear()
                 self._dummy_game_list.clear()
 
+    def _get_current_league(self) -> list[LeagueListItem, LeagueOutput]:
+        league_item: LeagueListItem = self._league_list.currentItem()
+        league: LeagueOutput = self._leagues[league_item.index]
+        return [league_item, league]
+
+    def _get_current_game(self) -> GameOutput:
+        if self._current_game is not None:
+            return self._current_game
+        else:
+            league: LeagueOutput
+            _, league = self._get_current_league()
+            return league.next_game
+
 
 window: MainWindow | None = None
 
