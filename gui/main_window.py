@@ -251,6 +251,30 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
 
+    def _set_next_game(self):
+        self._score_1_le.clear()
+        self._score_2_le.clear()
+        current_game: GameOutput = self._get_current_game()
+
+        self._team_1_lb.setText(current_game.team_1_name + ":")
+        self._team_2_lb.setText(current_game.team_2_name + ":")
+        self._score_1_le.setPlaceholderText("Tore: " + current_game.team_1_name)
+        self._score_2_le.setPlaceholderText("Tore: " + current_game.team_2_name)
+
+        if current_game.finished:
+            self._next_game_lb.setText("Spiel beartbeiten:")
+            self._add_score_btn.setText("Ergebnis aktualisieren")
+            self._score_1_le.setText(current_game.score_team_1)
+            self._score_2_le.setText(current_game.score_team_2)
+        else:
+            self._next_game_lb.setText("Nächstes Spiel:")
+            self._add_score_btn.setText("Ergebnis eintragen")
+
+        self._set_add_score_btn()
+
+    def _set_add_score_btn(self):
+        self._add_score_btn.setEnabled(self._is_valid_input())
+
     def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
             case ListType.LEAGUE:
@@ -283,6 +307,9 @@ class MainWindow(BaseWindow):
             league: LeagueOutput
             _, league = self._get_current_league()
             return league.next_game
+
+    def _is_valid_input(self) -> bool:
+        pass
 
 
 window: MainWindow | None = None
