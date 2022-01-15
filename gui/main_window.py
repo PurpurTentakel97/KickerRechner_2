@@ -11,9 +11,10 @@ from logic.league import LeagueOutput, GameOutput
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, index: int, league_name: str) -> None:
+    def __init__(self, index: int, league_name: str, league: LeagueOutput) -> None:
         super().__init__()
         self.index: int = index
+        self.league: LeagueOutput = league
         self.league_name: str = league_name
         self.first_round_games: list[GameOutput] = list()
         self.second_round_games: list[GameOutput] = list()
@@ -179,8 +180,10 @@ class MainWindow(BaseWindow):
 
     def _create_leagues(self) -> None:
         self._clear_ui_list(ListType.LEAGUE)
+        self._clear_ui_list(ListType.DAY)
+        self._clear_ui_list(ListType.GAME)
         for index, league in enumerate(self._leagues):
-            league_item: LeagueListItem = LeagueListItem(index=index, league_name=league.name)
+            league_item: LeagueListItem = LeagueListItem(index=index, league_name=league.name, league=league)
             self._add_item_to_ui_list(list_type=ListType.LEAGUE, list_item_1=league_item)
             for game in league.all_games:
                 if game.first_round:
@@ -189,35 +192,73 @@ class MainWindow(BaseWindow):
                     league_item.second_round_games.append(game)
         self._league_list.setCurrentItem(self._league_list_items[self._next_league_index])
 
+    def _create_days(self, first_round: bool) -> bool:
+        self._clear_ui_list(ListType.DAY)
+        self._clear_ui_list(ListType.GAME)
+
+        league_item: LeagueListItem = self._get_current_league()
+        current_game: GameOutput = self._get_current_game()
+
+        if first_round:
+            games: list[GameOutput] = league_item.first_round_games
+        else:
+            games: list[GameOutput] = league_item.second_round_games
+
+        day_set: bool = False
+        counter: int = 0
+        for game in games:
+            if counter < game.game_day:
+                new_day: DayListItem = DayListItem(game_day=game.game_day, league_name=league_item.league_name,
+                                                   first_round=game.first_round)
+                self._day_list.addItem(new_day)
+                if current_game in games and current_game.game_day == game.game_day:
+                    self._day_list.setCurrentItem(new_day)
+                    day_set: bool = True
+        return day_set
+
+    def _create_games(self, first_round: bool):
+        self._clear_ui_list(ListType.GAME)
+        league_item: LeagueListItem = self._get_current_league()
+        day_item: DayListItem = self._get_current_day()
+        current_game: GameOutput = self._get_current_game()
+
+        if first_round:
+            games: list[GameOutput] = league_item.first_round_games
+        else:
+            games: list[GameOutput] = league_item.second_round_games
+
+        for game in games:
+            if game.game_day == day_item.game_day:
+                new_game: GameListItem = GameListItem(league_name=league_item.league_name, game_name=game.game_name,
+                                                      score_team_1=game.score_team_1, score_team_2=game.score_team_2,
+                                                      finished=game.finished)
+                self._game_list.addItem(new_game)
+                if current_game in games and current_game.game_name == game.game_name:
+                    self._game_list.setCurrentItem(new_game)
+
     def _add_tabs_to_table_tabs(self) -> None:
         self._table_tabs.addTab(self._first_round_table, "Hinrunde")
         self._table_tabs.addTab(self._second_round_table, "Rückrunde")
         self._table_tabs.addTab(self._total_table, "Gesamt")
 
-    def _add_item_to_ui_list(self, list_type: ListType, list_item_1: QListWidgetItem,
-                             list_item_2: QListWidgetItem = None) -> None:
+    def _add_item_to_ui_list(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
             case ListType.LEAGUE:
                 self._league_list.addItem(list_item_1)
                 self._league_list_items.append(list_item_1)
             case ListType.DAY:
                 self._day_list.addItem(list_item_1)
-                self._dummy_day_list.addItem(list_item_2)
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
-                self._dummy_game_list.addItem(list_item_2)
 
-    def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem,
-                          list_item_2: QListWidgetItem = None) -> None:
+    def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
             case ListType.LEAGUE:
                 self._league_list.setCurrentItem(list_item_1)
             case ListType.DAY:
                 self._day_list.setCurrentItem(list_item_1)
-                self._dummy_day_list.setCurrentItem(list_item_2)
             case ListType.GAME:
                 self._game_list.setCurrentItem(list_item_1)
-                self._dummy_game_list.setCurrentItem(list_item_2)
 
     def _clear_ui_list(self, list_type: ListType) -> None:
         match list_type:
@@ -226,15 +267,14 @@ class MainWindow(BaseWindow):
                 self._league_list_items.clear()
             case ListType.DAY:
                 self._day_list.clear()
-                self._dummy_day_list.clear()
             case ListType.GAME:
                 self._game_list.clear()
-                self._dummy_game_list.clear()
 
-    def _get_current_league(self) -> list[LeagueListItem, LeagueOutput]:
-        league_item: LeagueListItem = self._league_list.currentItem()
-        league: LeagueOutput = self._leagues[league_item.index]
-        return [league_item, league]
+    def _get_current_league(self) -> LeagueListItem:
+        return self._league_list.currentItem()
+
+    def _get_current_day(self) -> DayListItem:
+        return self._day_list.currentItem()
 
     def _get_current_game(self) -> GameOutput:
         if self._current_game is not None:
