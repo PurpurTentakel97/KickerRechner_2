@@ -265,8 +265,7 @@ class League:
         team_1: Team = self._get_team_from_name(result_input.team_name_1)
         team_2: Team = self._get_team_from_name(result_input.team_name_2)
         game: Game = self._get_game_from_teams(team_1=team_1, team_2=team_2)
-        print(game)
         if result_input.finished:
-            pass
+            game.edit_entry(result_input=result_input, team_1=team_1)
         else:
             game.add_entry(result_input=result_input, team_1=team_1)

@@ -3,7 +3,7 @@
 # KickerRechner // Main Window
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
-    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
+    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QAbstractItemView
 from PyQt5.QtGui import QIntValidator
 
 import transition
@@ -128,8 +128,11 @@ class MainWindow(BaseWindow):
         self._table_lb: QLabel = QLabel()
         self._table_tabs: QTabWidget = QTabWidget()
         self._first_round_table: QTableWidget = QTableWidget()
+        self._first_round_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._second_round_table: QTableWidget = QTableWidget()
+        self._second_round_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._total_table: QTableWidget = QTableWidget()
+        self._total_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._add_tabs_to_table_tabs()
 
     def _create_initial_text(self) -> None:

@@ -95,8 +95,50 @@ class Game:
                         self.team_1.second_round_loose += 1
                         self.team_2.second_round_wins += 1
 
-    def edit_entry(self):
-        pass
+    def edit_entry(self, result_input, team_1: Team):
+        self._remove_team_statistics()
+        self.add_entry(result_input=result_input, team_1=team_1)
 
-    def _edit_team_statistics(self):
-        pass
+    def _remove_team_statistics(self):
+        match self.first_round:
+            case True:
+                self.team_1.first_round_points -= self._team_1_result
+                self.team_2.first_round_points -= self._team_2_result
+
+                self.team_1.first_round_goals -= self.score_team_1
+                self.team_2.first_round_goals -= self.score_team_2
+
+                self.team_1.first_round_counter_goals -= self.score_team_2
+                self.team_2.first_round_counter_goals -= self.score_team_1
+
+                match self._team_1_result:
+                    case Result.WIN:
+                        self.team_1.first_round_wins -= 1
+                        self.team_2.first_round_loose -= 1
+                    case Result.DRAW:
+                        self.team_1.first_round_draw -= 1
+                        self.team_2.first_round_draw -= 1
+                    case Result.LOOSE:
+                        self.team_1.first_round_loose -= 1
+                        self.team_2.first_round_wins -= 1
+
+            case False:
+                self.team_1.second_round_points -= self._team_1_result
+                self.team_2.second_round_points -= self._team_2_result
+
+                self.team_1.second_round_goals -= self.score_team_1
+                self.team_2.second_round_goals -= self.score_team_2
+
+                self.team_1.second_round_counter_goals -= self.score_team_2
+                self.team_2.second_round_counter_goals -= self.score_team_1
+
+                match self._team_1_result:
+                    case Result.WIN:
+                        self.team_1.second_round_wins -= 1
+                        self.team_2.second_round_loose -= 1
+                    case Result.DRAW:
+                        self.team_1.second_round_draw -= 1
+                        self.team_2.second_round_draw -= 1
+                    case Result.LOOSE:
+                        self.team_1.second_round_loose -= 1
+                        self.team_2.second_round_wins -= 1
