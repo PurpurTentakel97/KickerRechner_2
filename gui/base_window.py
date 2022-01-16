@@ -15,22 +15,22 @@ class BaseWindow(QMainWindow):
         self._set_menu()
 
     def _set_base_window_information(self):
-        self.setWindowIcon(QIcon("gui/Icons/Icon.png"))
+        self.setWindowIcon(QIcon("gui/Icons/main_icon.png"))
 
     def _set_menu(self):
-        save_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Speichern', self)
+        save_action: QAction = QAction(QIcon("gui/Icons/save_icon.png"), '&Speichern', self)
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self._save)
 
-        load_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Laden', self)
+        load_action: QAction = QAction(QIcon("gui/Icons/load_icon.png"), '&Laden', self)
         load_action.setShortcut("Ctrl+L")
         load_action.triggered.connect(self._load)
 
-        restart_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Neustart', self)
+        restart_action: QAction = QAction(QIcon("gui/Icons/restart_icon.png"), '&Neustart', self)
         restart_action.setShortcut("Ctrl+R")
         restart_action.triggered.connect(self._restart)
 
-        close_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Schließen', self)
+        close_action: QAction = QAction(QIcon("gui/Icons/quit_icon.png"), '&Schließen', self)
         close_action.setShortcut("Alt+F4")
         close_action.triggered.connect(self._quit)
 
