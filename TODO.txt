@@ -2,8 +2,3 @@
 # 09.01.2022
 # KickerRechner // TODO
 
-- input window:
-    - set initial focus in league_name if new league else team_name
-
-- main window:
-    - set initial focus in team_score_1

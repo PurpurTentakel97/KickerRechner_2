@@ -335,6 +335,7 @@ class MainWindow(BaseWindow):
             self._add_score_btn.setText("Ergebnis eintragen")
 
         self._set_add_score_btn()
+        self._set_focus()
 
     def _set_second_round(self) -> None:
         league_item: LeagueListItem = self._get_current_league()
@@ -386,6 +387,9 @@ class MainWindow(BaseWindow):
 
     def _set_add_score_btn(self) -> None:
         self._add_score_btn.setEnabled(self._is_valid_input())
+
+    def _set_focus(self):
+        self._score_1_le.setFocus()
 
     def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
