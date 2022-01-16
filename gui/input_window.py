@@ -64,7 +64,7 @@ class InputWindow(BaseWindow):
 
         self._is_team_edit: bool = False
 
-        self._set_window_information()
+        self.set_window_information()
         self._create_initial_ui()
         self._create_initial_league()
         self._set_initial_text()
@@ -240,7 +240,7 @@ class InputWindow(BaseWindow):
 
         self.show()
 
-    def _set_window_information(self) -> None:
+    def set_window_information(self) -> None:
         self.setWindowTitle("KickerRechner / Input")
 
     def _set_current_league_active(self) -> None:

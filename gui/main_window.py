@@ -84,7 +84,7 @@ class MainWindow(BaseWindow):
         self._create_initial_ui()
         self._create_initial_text()
         self._create_initial_layout()
-        self._set_window_information()
+        self.set_window_information()
 
         self._create_leagues()
         self._set_league()
@@ -285,7 +285,7 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
 
-    def _set_window_information(self) -> None:
+    def set_window_information(self) -> None:
         self.setWindowTitle("KickerRechner")
 
     def _set_league(self) -> None:
