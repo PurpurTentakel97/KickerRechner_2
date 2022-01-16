@@ -2,6 +2,8 @@
 # 09.01.2022
 # KickerRechner // Manager
 # __Main_Sheet__
+import os.path
+
 import transition
 from logic.league import League, LeagueOutput
 
@@ -80,3 +82,7 @@ def _is_tournaments_finished() -> bool:
             finished: bool = False
             break
     return finished
+
+
+def save(filename: str):
+    pass

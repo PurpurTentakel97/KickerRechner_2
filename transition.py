@@ -7,7 +7,7 @@ from gui import input_window, main_window
 
 class ResultInput:
     def __init__(self, league_name: str, team_name_1: str, team_name_2: str, team_score_1: int, team_score_2: int,
-                 first_round: bool, finished: bool):
+                 first_round: bool, finished: bool) -> None:
         self.league_name: str = league_name
         self.team_name_1: str = team_name_1
         self.team_name_2: str = team_name_2
@@ -19,7 +19,7 @@ class ResultInput:
 
 class GameInput:
     def __init__(self, game_name: str, team_1_name: str, team_2_name: str, game_day: int, first_round: bool,
-                 score_team_1: int = 0, score_team_2: int = 0, finished: bool = False):
+                 score_team_1: int = 0, score_team_2: int = 0, finished: bool = False) -> None:
         self.game_name: str = game_name
         self.team_1_name: str = team_1_name
         self.team_2_name: str = team_2_name
@@ -33,7 +33,7 @@ class GameInput:
 class LeagueInput:
     def __init__(self, name: str, second_round: bool, finished: bool, next_game: GameInput,
                  all_games: tuple[GameInput],
-                 first_round_table: tuple, second_round_table: tuple, total_table: tuple):
+                 first_round_table: tuple, second_round_table: tuple, total_table: tuple) -> None:
         self.name: str = name
         self.second_round: bool = second_round
         self.finished: bool = finished
@@ -44,11 +44,11 @@ class LeagueInput:
         self.total_table: tuple[list] = total_table
 
 
-def create_input_window():
+def create_input_window() -> None:
     input_window.create_input_window()
 
 
-def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None = None, finished: bool = False):
+def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None = None, finished: bool = False) -> None:
     input_: list[LeagueInput] = list()
     for league in output_:
         next_game: GameInput | None = None
@@ -74,13 +74,17 @@ def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None 
                                        finished=finished)
 
 
-def put_input_window_data_to_logic(output_: tuple[list[str, bool, bool, list[str]]]):
+def put_input_window_data_to_logic(output_: tuple[list[str, bool, bool, list[str]]]) -> None:
     main_manager.process_data_from_input_window(initial_input=output_)
 
 
-def put_main_window_data_to_logic(output_: main_window.ResultOutput):
+def put_main_window_data_to_logic(output_: main_window.ResultOutput) -> None:
     input_: ResultInput = ResultInput(league_name=output_.league_name, team_name_1=output_.team_name_1,
                                       team_name_2=output_.team_name_2, team_score_1=output_.team_score_1,
                                       team_score_2=output_.team_score_2, first_round=output_.first_round,
                                       finished=output_.finished)
     main_manager.process_data_from_main_window(input_)
+
+
+def save(filename: str) -> None:
+    main_manager.save(filename=filename)

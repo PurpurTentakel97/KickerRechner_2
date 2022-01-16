@@ -5,6 +5,8 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu
 from PyQt5.QtGui import QIcon
 
+import transition
+
 
 class BaseWindow(QMainWindow):
     def __init__(self):
@@ -13,22 +15,22 @@ class BaseWindow(QMainWindow):
         self._set_menu()
 
     def _set_base_window_information(self):
-        self.setWindowIcon(QIcon("../gui/Icons/Icon.png"))
+        self.setWindowIcon(QIcon("gui/Icons/Icon.png"))
 
     def _set_menu(self):
-        save_action: QAction = QAction(QIcon("../gui/Icons/Icon.png"), '&Speichern', self)
+        save_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Speichern', self)
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self._save)
 
-        load_action: QAction = QAction(QIcon("../gui/Icons/Icon.png"), '&Laden', self)
+        load_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Laden', self)
         load_action.setShortcut("Ctrl+L")
         load_action.triggered.connect(self._load)
 
-        restart_action: QAction = QAction(QIcon("../gui/Icons/Icon.png"), '&Neustart', self)
+        restart_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Neustart', self)
         restart_action.setShortcut("Ctrl+R")
         restart_action.triggered.connect(self._restart)
 
-        close_action: QAction = QAction(QIcon("../gui/Icons/Icon.png"), '&Schließen', self)
+        close_action: QAction = QAction(QIcon("gui/Icons/Icon.png"), '&Schließen', self)
         close_action.setShortcut("Alt+F4")
         close_action.triggered.connect(self._quit)
 
@@ -50,6 +52,7 @@ class BaseWindow(QMainWindow):
 
     def _save(self):
         print("saved")
+        transition.save(filename="Neues File")
 
     def _load(self):
         self._save()
