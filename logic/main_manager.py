@@ -39,10 +39,30 @@ def _update_data_in_main_window() -> None:
     output: list[LeagueOutput] = list()
     for league in active_leagues:
         output.append(league.get_output())
-    transition.put_logic_data_to_main_window(output_=tuple(output),next_league_index=0)
+    transition.put_logic_data_to_main_window(output_=tuple(output), next_league_index=_get_next_league_index())
 
 
 def _get_league_from_name(league_name: str) -> League:
     for league in active_leagues:
         if league.name == league_name:
             return league
+
+
+def _get_next_league_index() -> int:
+    all_percent: list[float] = list()
+    for league in active_leagues:
+        finished_game_counter: int = 0
+        for game in league.games:
+            if game.finished:
+                finished_game_counter += 1
+        all_games: int = len(league.games)
+        percent: float = finished_game_counter / all_games
+        all_percent.append(percent)
+
+    low_number: float = 1.0
+    for number in all_percent:
+        if low_number > number:
+            low_number = number
+
+    next_index: int = all_percent.index(low_number)
+    return next_index
