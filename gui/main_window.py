@@ -114,10 +114,12 @@ class MainWindow(BaseWindow):
         self._score_1_le.setValidator(QIntValidator())
         self._score_1_le.setMaxLength(3)
         self._score_1_le.textChanged.connect(self._set_add_score_btn)
+        self._score_1_le.returnPressed.connect(self._add_entry_return)
         self._score_2_le: QLineEdit = QLineEdit()
         self._score_2_le.setValidator(QIntValidator())
         self._score_2_le.setMaxLength(3)
         self._score_2_le.textChanged.connect(self._set_add_score_btn)
+        self._score_2_le.returnPressed.connect(self._add_entry_return)
         self._add_score_btn: QPushButton = QPushButton()
         self._add_score_btn.setEnabled(False)
         self._add_score_btn.clicked.connect(lambda x: self._add_entry(StartCheck.START))
@@ -383,7 +385,7 @@ class MainWindow(BaseWindow):
         dummy.update()
 
     def _set_add_score_btn(self) -> None:
-        self._add_score_btn.setEnabled(True)
+        self._add_score_btn.setEnabled(self._is_valid_input())
 
     def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
@@ -441,6 +443,9 @@ class MainWindow(BaseWindow):
             return False
 
         return True
+
+    def _add_entry_return(self) -> None:
+        self._add_entry(StartCheck.START)
 
     def _add_entry(self, start_check: StartCheck) -> None:
         if self._is_valid_input(start_check):
