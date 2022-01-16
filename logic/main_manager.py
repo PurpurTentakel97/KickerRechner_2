@@ -36,10 +36,12 @@ def _put_data_to_main_window() -> None:
 
 
 def _update_data_in_main_window() -> None:
+    finished: bool = _is_tournaments_finished()
     output: list[LeagueOutput] = list()
     for league in active_leagues:
         output.append(league.get_output())
-    transition.put_logic_data_to_main_window(output_=tuple(output), next_league_index=_get_next_league_index())
+    transition.put_logic_data_to_main_window(output_=tuple(output), next_league_index=_get_next_league_index(),
+                                             finished=finished)
 
 
 def _get_league_from_name(league_name: str) -> League:
@@ -51,6 +53,9 @@ def _get_league_from_name(league_name: str) -> League:
 def _get_next_league_index() -> int:
     all_percent: list[float] = list()
     for league in active_leagues:
+        if league.finished:
+            all_percent.append(1.0)
+            continue
         finished_game_counter: int = 0
         for game in league.games:
             if game.finished:
@@ -66,3 +71,12 @@ def _get_next_league_index() -> int:
 
     next_index: int = all_percent.index(low_number)
     return next_index
+
+
+def _is_tournaments_finished() -> bool:
+    finished: bool = True
+    for league in active_leagues:
+        if not league.finished:
+            finished: bool = False
+            break
+    return finished

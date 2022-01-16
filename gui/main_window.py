@@ -3,7 +3,7 @@
 # KickerRechner // Main Window
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
-    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QAbstractItemView
+    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QAbstractItemView, QMessageBox
 from PyQt5.QtGui import QIntValidator
 
 import transition
@@ -79,10 +79,12 @@ class MainWindow(BaseWindow):
         self._league_list_items: list[LeagueListItem] = list()
         self._current_game: transition.GameInput | None = None
         self._next_league_index: int = 0
+        self.finished: bool = False
 
         self._create_initial_ui()
         self._create_initial_text()
         self._create_initial_layout()
+        self._set_window_information()
 
         self._create_leagues()
         self._set_league()
@@ -283,8 +285,16 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
 
+    def _set_window_information(self) -> None:
+        self.setWindowTitle("KickerRechner")
+
     def _set_league(self) -> None:
-        self._current_game: transition.GameInput | None = None
+        if not self.finished:
+            self._current_game: transition.GameInput | None = None
+        else:
+            league_item: LeagueListItem = self._league_list.currentItem()
+            self._current_game = league_item.league.all_games[0]
+
         current_game: transition.GameInput = self._get_current_game()
         self._create_days(current_game.first_round)
         self._create_games()
@@ -394,6 +404,8 @@ class MainWindow(BaseWindow):
     def _set_focus(self):
         if len(self._score_1_le.text().strip()) == 0:
             self._score_1_le.setFocus()
+        elif len(self._score_1_le.text().strip()) != 0 and len(self._score_2_le.text().strip()) != 0:
+            self._score_1_le.setFocus()
         else:
             self._score_2_le.setFocus()
 
@@ -472,13 +484,30 @@ class MainWindow(BaseWindow):
                                                 team_name_2=current_game.team_2_name, team_score_1=team_score_1,
                                                 team_score_2=team_score_2, first_round=current_game.first_round,
                                                 finished=current_game.finished)
+            if current_game.finished:
+                if current_game.score_team_1 == team_score_1 and current_game.score_team_2 == team_score_2:
+                    self.set_status_bar("Keine Änderung vorgenommen")
             transition.put_main_window_data_to_logic(output_=output)
 
-    def update_data(self, update_input: tuple, next_league_index: int):
+    def _display_finished(self):
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Turnier Beendet")
+        msg.setInformativeText("Das Turnier ist beendet. Du kannst dir noch alle Tabellen und Ergebnisse angucken. "
+                               "Wenn Bedarf besteht kannst du auch noch Ergebnisse ändern")
+        msg.setWindowTitle("Turnier Beendet")
+        msg.setStandardButtons(QMessageBox.Ok)
+        retval = msg.exec_()
+
+    def update_data(self, update_input: tuple, next_league_index: int, finished: bool):
+        self.finished: bool = finished
         self._next_league_index: int = next_league_index
         self._leagues: tuple = update_input
         self._create_leagues()
         self._set_league()
+        if self.finished:
+            self._display_finished()
 
 
 window: MainWindow | None = None

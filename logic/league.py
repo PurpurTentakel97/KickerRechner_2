@@ -114,22 +114,19 @@ class League:
         self.finished = True
 
     def get_output(self) -> LeagueOutput | bool:
-        if self.finished:
-            return self.finished
-        else:
-            next_game: GameOutput
-            all_games: tuple[GameOutput]
-            next_game, all_games = self._get_all_games()
-            league_output: LeagueOutput = LeagueOutput(
-                name=self.name,
-                second_round=self.is_second_round,
-                finished=self.finished,
-                next_game=next_game,
-                all_games=all_games,
-                first_round_table=self._get_round_tables(TableType.FIRST),
-                second_round_table=self._get_round_tables(TableType.SECOND),
-                total_table=self._get_total_table())
-            return league_output
+        next_game: GameOutput
+        all_games: tuple[GameOutput]
+        next_game, all_games = self._get_all_games()
+        league_output: LeagueOutput = LeagueOutput(
+            name=self.name,
+            second_round=self.is_second_round,
+            finished=self.finished,
+            next_game=next_game,
+            all_games=all_games,
+            first_round_table=self._get_round_tables(TableType.FIRST),
+            second_round_table=self._get_round_tables(TableType.SECOND),
+            total_table=self._get_total_table())
+        return league_output
 
     def _get_name_from_team(self, team_to_check: Team) -> str:
         for team in self.teams:
@@ -223,16 +220,19 @@ class League:
         teams_with_stats = dict()
         for team in self.teams:
             stats_of_team: dict[Stats] = dict()
-            stats_of_team[Stats.POINTS] = team.first_round_points if table_type.FIRST else team.second_round_points
-            stats_of_team[Stats.GOALS] = team.first_round_goals if table_type.FIRST else team.second_round_goals
-            stats_of_team[Stats.COUNTER_GOALS] = team.first_round_counter_goals if table_type.FIRST \
-                else team.second_round_counter_goals
-            stats_of_team[Stats.GOAL_DIFF] = team.first_round_goals - team.first_round_counter_goals if table_type.FIRST \
-                else team.second_round_goals - team.second_round_counter_goals
-            stats_of_team[Stats.BALANCE] = (str(team.first_round_wins) + " / " + str(team.first_round_draw) + " / " +
-                                            str(team.first_round_loose)) if table_type.FIRST else \
-                (str(team.second_round_wins) + " / " + str(team.second_round_draw) + " / " +
-                 str(team.second_round_loose))
+            stats_of_team[Stats.POINTS] = team.first_round_points if table_type == TableType.FIRST \
+                                            else team.second_round_points
+            stats_of_team[Stats.GOALS] = team.first_round_goals if table_type == TableType.FIRST \
+                                            else team.second_round_goals
+            stats_of_team[Stats.COUNTER_GOALS] = team.first_round_counter_goals if table_type == TableType.FIRST \
+                                            else team.second_round_counter_goals
+            stats_of_team[Stats.GOAL_DIFF] = team.first_round_goals - team.first_round_counter_goals \
+                                            if table_type == TableType.FIRST \
+                                            else team.second_round_goals - team.second_round_counter_goals
+            stats_of_team[Stats.BALANCE] = (str(team.first_round_wins) + " / " + str(team.first_round_draw) +
+                                            " / " + str(team.first_round_loose)) if table_type == TableType.FIRST \
+                                            else (str(team.second_round_wins) + " / " + str(team.second_round_draw) +
+                                            " / " + str(team.second_round_loose))
             teams_with_stats[team] = stats_of_team
 
         teams_with_stats = list(teams_with_stats.items())
@@ -269,3 +269,10 @@ class League:
             game.edit_entry(result_input=result_input, team_1=team_1)
         else:
             game.add_entry(result_input=result_input, team_1=team_1)
+
+        finished: bool = True
+        for game in self.games:
+            if not game.finished:
+                finished: bool = False
+                break
+        self.finished: bool = finished

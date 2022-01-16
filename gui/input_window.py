@@ -241,7 +241,7 @@ class InputWindow(BaseWindow):
         self.show()
 
     def _set_window_information(self) -> None:
-        self.setWindowTitle("KickerRechner by Purpur Tentakel // Input Window")
+        self.setWindowTitle("KickerRechner / Input")
 
     def _set_current_league_active(self) -> None:
         league: LeagueListItem = self._league_list.currentItem()
