@@ -6,19 +6,19 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget
     QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
 from PyQt5.QtGui import QIntValidator
 
+import transition
 from gui.base_window import BaseWindow
 from gui.enum_sheet import ListType, TableType, StartCheck
-from logic.league import LeagueOutput, GameOutput
 
 
 class LeagueListItem(QListWidgetItem):
-    def __init__(self, index: int, league_name: str, league: LeagueOutput) -> None:
+    def __init__(self, index: int, league_name: str, league) -> None:
         super().__init__()
         self.index: int = index
-        self.league: LeagueOutput = league
+        self.league: transition.LeagueInput = league
         self.league_name: str = league_name
-        self.first_round_games: list[GameOutput] = list()
-        self.second_round_games: list[GameOutput] = list()
+        self.first_round_games: list[transition.GameInput] = list()
+        self.second_round_games: list[transition.GameInput] = list()
 
         self._crate_text()
 
@@ -52,7 +52,7 @@ class GameListItem(QListWidgetItem):
 
     def _create_text(self) -> None:
         if self.finished:
-            self.setText(self.game_name + "//" + str(self.score_team_1) + ":" + str(self.score_team_2))
+            self.setText(self.game_name + "   //   " + str(self.score_team_1) + "  :  " + str(self.score_team_2))
         else:
             self.setText(self.game_name)
 
@@ -62,22 +62,22 @@ class GameListItem(QListWidgetItem):
 
 class ResultOutput:
     def __init__(self, league_name: str, team_name_1: str, team_name_2: str, team_score_1: int, team_score_2: int,
-                 first_round: bool):
+                 first_round: bool, finished: bool):
         self.league_name: str = league_name
         self.team_name_1: str = team_name_1
         self.team_name_2: str = team_name_2
         self.team_score_1: int = team_score_1
         self.team_score_2: int = team_score_2
         self.first_round: bool = first_round
+        self.finished: bool = finished
 
 
 class MainWindow(BaseWindow):
-    def __init__(self, initial_input: tuple[LeagueOutput]) -> None:
+    def __init__(self, initial_input: tuple) -> None:
         super().__init__()
         self._leagues = initial_input
-        print(self._leagues)
         self._league_list_items: list[LeagueListItem] = list()
-        self._current_game: GameOutput | None = None
+        self._current_game: transition.GameInput | None = None
         self._next_league_index: int = 0
 
         self._create_initial_ui()
@@ -225,12 +225,12 @@ class MainWindow(BaseWindow):
         self._clear_ui_list(ListType.GAME)
 
         league_item: LeagueListItem = self._get_current_league()
-        current_game: GameOutput = self._get_current_game()
+        current_game: transition.GameInput = self._get_current_game()
 
         if first_round:
-            games: list[GameOutput] = league_item.first_round_games
+            games: list[transition.GameInput] = league_item.first_round_games
         else:
-            games: list[GameOutput] = league_item.second_round_games
+            games: list[transition.GameInput] = league_item.second_round_games
 
         day_set: bool = False
         counter: int = 0
@@ -249,12 +249,12 @@ class MainWindow(BaseWindow):
         self._clear_ui_list(ListType.GAME)
         league_item: LeagueListItem = self._get_current_league()
         day_item: DayListItem = self._get_current_day()
-        current_game: GameOutput = self._get_current_game()
+        current_game: transition.GameInput = self._get_current_game()
 
         if day_item.first_round:
-            games: list[GameOutput] = league_item.first_round_games
+            games: list[transition.GameInput] = league_item.first_round_games
         else:
-            games: list[GameOutput] = league_item.second_round_games
+            games: list[transition.GameInput] = league_item.second_round_games
 
         for game in games:
             if game.game_day == day_item.game_day:
@@ -281,8 +281,8 @@ class MainWindow(BaseWindow):
                 self._game_list.addItem(list_item_1)
 
     def _set_league(self) -> None:
-        self._current_game: GameOutput | None = None
-        current_game: GameOutput = self._get_current_game()
+        self._current_game: transition.GameInput | None = None
+        current_game: transition.GameInput = self._get_current_game()
         self._create_days(current_game.first_round)
         self._create_games()
         self._set_next_game()
@@ -310,15 +310,19 @@ class MainWindow(BaseWindow):
         league_item: LeagueListItem = self._get_current_league()
         game_item: GameListItem = self._game_list.currentItem()
         for game in league_item.league.all_games:
+            print("//")
+            print(game.game_name)
+            print(game_item.game_name)
+            print("//")
             if game.game_name == game_item.game_name:
-                self._current_game: GameOutput = game
+                self._current_game = game
                 break
         self._set_next_game()
 
     def _set_next_game(self) -> None:
         self._score_1_le.clear()
         self._score_2_le.clear()
-        current_game: GameOutput = self._get_current_game()
+        current_game: transition.GameInput = self._get_current_game()
 
         self._team_1_lb.setText(current_game.team_1_name + ":")
         self._team_2_lb.setText(current_game.team_2_name + ":")
@@ -328,8 +332,8 @@ class MainWindow(BaseWindow):
         if current_game.finished:
             self._next_game_lb.setText("Spiel beartbeiten:")
             self._add_score_btn.setText("Ergebnis aktualisieren")
-            self._score_1_le.setText(current_game.score_team_1)
-            self._score_2_le.setText(current_game.score_team_2)
+            self._score_1_le.setText(str(current_game.score_team_1))
+            self._score_2_le.setText(str(current_game.score_team_2))
         else:
             self._next_game_lb.setText("Nächstes Spiel:")
             self._add_score_btn.setText("Ergebnis eintragen")
@@ -339,7 +343,7 @@ class MainWindow(BaseWindow):
 
     def _set_second_round(self) -> None:
         league_item: LeagueListItem = self._get_current_league()
-        current_game: GameOutput = self._get_current_game()
+        current_game: transition.GameInput = self._get_current_game()
 
         if not league_item.league.second_round and self._table_tabs.currentIndex() == 1:
             self._table_tabs.setCurrentIndex(0)
@@ -416,7 +420,7 @@ class MainWindow(BaseWindow):
     def _get_current_day(self) -> DayListItem:
         return self._day_list.currentItem()
 
-    def _get_current_game(self) -> GameOutput:
+    def _get_current_game(self):
         if self._current_game is not None:
             return self._current_game
         else:
@@ -424,7 +428,7 @@ class MainWindow(BaseWindow):
             return league_item.league.next_game
 
     def _is_valid_input(self, check: StartCheck = StartCheck.CHECK) -> bool:
-        current_game: GameOutput = self._get_current_game()
+        current_game: transition.GameInput = self._get_current_game()
 
         text: str = self._score_1_le.text()
         if len(text.strip()) == 0:
@@ -457,13 +461,18 @@ class MainWindow(BaseWindow):
             current_game = self._get_current_game()
             team_score_1: int = int(self._score_1_le.text())
             team_score_2: int = int(self._score_2_le.text())
-            output: ResultOutput(league_name=league_item.league_name, team_name_1=current_game.team_1_name,
-                                 team_name_2=current_game.team_1_name, team_score_1=team_score_1,
-                                 team_score_2=team_score_2, first_round=current_game.first_round)
-            if current_game.finished:
-                pass
-            else:
-                pass
+            output: ResultOutput = ResultOutput(league_name=league_item.league_name,
+                                                team_name_1=current_game.team_1_name,
+                                                team_name_2=current_game.team_2_name, team_score_1=team_score_1,
+                                                team_score_2=team_score_2, first_round=current_game.first_round,
+                                                finished=current_game.finished)
+            transition.put_main_window_data_to_logic(output_=output)
+
+    def update_data(self, update_input: tuple, next_league_index: int):
+        self._next_league_index: int = next_league_index
+        self._leagues: tuple = update_input
+        self._create_leagues()
+        self._set_league()
 
 
 window: MainWindow | None = None

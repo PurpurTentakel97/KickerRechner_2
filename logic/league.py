@@ -1,7 +1,6 @@
 # Purpur Tentakel
 # 09.01.2022
 # KickerRechner // League
-from typing import Tuple
 
 from logic.team import Team
 from logic.game import Game
@@ -96,7 +95,8 @@ class League:
             for team_1_int, team_2_int in games.items():
                 team_name_1: str = self._get_name_from_team(team_to_check=self.teams[team_1_int - 1])
                 team_name_2: str = self._get_name_from_team(team_to_check=self.teams[team_2_int - 1])
-                final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2, team_1=self.teams[team_1_int - 1],
+                final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2,
+                                        team_1=self.teams[team_1_int - 1],
                                         team_2=self.teams[team_2_int - 1], game_day=day, first_round=True)
                 self.games.append(final_game)
 
@@ -136,6 +136,16 @@ class League:
             if team == team_to_check:
                 return team.name
 
+    def _get_team_from_name(self, team_name: str) -> Team:
+        for team in self.teams:
+            if team.name == team_name:
+                return team
+
+    def _get_game_from_teams(self, team_1: Team, team_2: Team) -> Game:
+        for game in self.games:
+            if game.team_1 == team_1 and game.team_2 == team_2:
+                return game
+
     def _get_game_from_teams_in_round_table_type(self, team_1: Team, team_2: Team, table_type: TableType) -> Game:
         for game in self.games:
             if table_type == TableType.FIRST and game.first_round:
@@ -154,7 +164,10 @@ class League:
                 team_1_name=self._get_name_from_team(current_game.team_1),
                 team_2_name=self._get_name_from_team(current_game.team_2),
                 game_day=current_game.game_day,
-                first_round=current_game.first_round)
+                first_round=current_game.first_round,
+                score_team_1=current_game.score_team_1,
+                score_team_2=current_game.score_team_2,
+                finished=current_game.finished)
             all_games.append(single_game)
             if next_game is None and not current_game.finished:
                 next_game = single_game
@@ -246,3 +259,13 @@ class League:
                                              x[1][Stats.GOALS],
                                              x[1][Stats.COUNTER_GOALS]), reverse=True)
         return teams_with_stats
+
+    def add_edit_entry(self, result_input):
+        team_1: Team = self._get_team_from_name(result_input.team_name_1)
+        team_2: Team = self._get_team_from_name(result_input.team_name_2)
+        game: Game = self._get_game_from_teams(team_1=team_1, team_2=team_2)
+        print(game)
+        if result_input.finished:
+            pass
+        else:
+            game.add_entry(result_input=result_input, team_1=team_1)

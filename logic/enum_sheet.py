@@ -2,7 +2,7 @@
 # 10.01.2022
 # KickerRechner // enum
 
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class TableType(Enum):
@@ -17,3 +17,9 @@ class Stats(Enum):
     GOALS = 2
     COUNTER_GOALS = 3
     BALANCE = 4
+
+
+class Result(IntEnum):
+    WIN = 3
+    DRAW = 1
+    LOOSE = 0

@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QLabel, 
     QHBoxLayout, QVBoxLayout, QMessageBox, QWidget
 from PyQt5.QtGui import QColor
 
+import transition
 from gui.base_window import BaseWindow
 from gui.enum_sheet import StartCheck
 
@@ -82,6 +83,7 @@ class InputWindow(BaseWindow):
         self._league_name_lb = QLabel()
         self._league_name_le = QLineEdit()
         self._league_name_le.textChanged.connect(self._edit_current_league_name)
+        self._league_name_le.returnPressed.connect(self._set_focus)
 
         self._active_cb = QCheckBox()
         self._active_cb.setChecked(True)
@@ -529,7 +531,7 @@ class InputWindow(BaseWindow):
                 ]
                 output.append(league_output)
             self.close()
-            main_manager.process_data_from_input_window(initial_input=tuple(output))
+            transition.put_input_window_data_to_logic(tuple(output))
 
 
 window = InputWindow
