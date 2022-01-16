@@ -4,9 +4,10 @@
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
     QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout
+from PyQt5.QtGui import QIntValidator
 
 from gui.base_window import BaseWindow
-from gui.enum_sheet import ListType, TableType
+from gui.enum_sheet import ListType, TableType, StartCheck
 from logic.league import LeagueOutput, GameOutput
 
 
@@ -59,6 +60,17 @@ class GameListItem(QListWidgetItem):
         self._create_text()
 
 
+class ResultOutput:
+    def __init__(self, league_name: str, team_name_1: str, team_name_2: str, team_score_1: int, team_score_2: int,
+                 first_round: bool):
+        self.league_name: str = league_name
+        self.team_name_1: str = team_name_1
+        self.team_name_2: str = team_name_2
+        self.team_score_1: int = team_score_1
+        self.team_score_2: int = team_score_2
+        self.first_round: bool = first_round
+
+
 class MainWindow(BaseWindow):
     def __init__(self, initial_input: tuple[LeagueOutput]) -> None:
         super().__init__()
@@ -73,7 +85,7 @@ class MainWindow(BaseWindow):
         self._create_initial_layout()
 
         self._create_leagues()
-        self._set_next_league()
+        self._set_league()
 
     def _create_initial_ui(self) -> None:
         self.widget = QWidget()
@@ -81,22 +93,34 @@ class MainWindow(BaseWindow):
         # Top Left
         self._league_lb: QLabel = QLabel()
         self._league_list: QListWidget = QListWidget()
+        self._league_list.itemClicked.connect(self._set_league)
 
         # Top Right games
         self._first_round_btn: QPushButton = QPushButton()
+        self._first_round_btn.clicked.connect(lambda x: self._set_round(first_round=True))
         self._second_round_btn: QPushButton = QPushButton()
+        self._second_round_btn.clicked.connect(lambda x: self._set_round(first_round=False))
 
         self._day_list: QListWidget = QListWidget()
+        self._day_list.itemClicked.connect(self._set_day)
         self._game_list: QListWidget = QListWidget()
+        self._game_list.itemClicked.connect(self._set_game)
 
         # Top Right next game
         self._next_game_lb: QLabel = QLabel()
         self._team_1_lb: QLabel = QLabel()
         self._team_2_lb: QLabel = QLabel()
         self._score_1_le: QLineEdit = QLineEdit()
+        self._score_1_le.setValidator(QIntValidator())
+        self._score_1_le.setMaxLength(3)
+        self._score_1_le.textChanged.connect(self._set_add_score_btn)
         self._score_2_le: QLineEdit = QLineEdit()
+        self._score_2_le.setValidator(QIntValidator())
+        self._score_2_le.setMaxLength(3)
+        self._score_2_le.textChanged.connect(self._set_add_score_btn)
         self._add_score_btn: QPushButton = QPushButton()
         self._add_score_btn.setEnabled(False)
+        self._add_score_btn.clicked.connect(lambda x: self._add_entry(StartCheck.START))
 
         # Bottom
         self._table_lb: QLabel = QLabel()
@@ -219,13 +243,13 @@ class MainWindow(BaseWindow):
                     day_set: bool = True
         return day_set
 
-    def _create_games(self, first_round: bool):
+    def _create_games(self):
         self._clear_ui_list(ListType.GAME)
         league_item: LeagueListItem = self._get_current_league()
         day_item: DayListItem = self._get_current_day()
         current_game: GameOutput = self._get_current_game()
 
-        if first_round:
+        if day_item.first_round:
             games: list[GameOutput] = league_item.first_round_games
         else:
             games: list[GameOutput] = league_item.second_round_games
@@ -254,14 +278,42 @@ class MainWindow(BaseWindow):
             case ListType.GAME:
                 self._game_list.addItem(list_item_1)
 
-    def _set_next_league(self):
+    def _set_league(self) -> None:
+        self._current_game: GameOutput | None = None
         current_game: GameOutput = self._get_current_game()
         self._create_days(current_game.first_round)
-        self._create_games(current_game.first_round)
+        self._create_games()
         self._set_next_game()
         self._set_second_round()
+        self._set_tables(TableType.FIRST)
+        self._set_tables(TableType.SECOND)
+        self._set_tables(TableType.TOTAL)
 
-    def _set_next_game(self):
+    def _set_round(self, first_round: bool) -> None:
+        day_set: bool = self._create_days(first_round=first_round)
+        if day_set:
+            self._create_games()
+
+        if first_round:
+            self._first_round_btn.setStyleSheet("background-color: light grey")
+            self._second_round_btn.setStyleSheet("background-color: white")
+        else:
+            self._first_round_btn.setStyleSheet("background-color: white")
+            self._second_round_btn.setStyleSheet("background-color: light grey")
+
+    def _set_day(self):
+        self._create_games()
+
+    def _set_game(self):
+        league_item: LeagueListItem = self._get_current_league()
+        game_item: GameListItem = self._game_list.currentItem()
+        for game in league_item.league.all_games:
+            if game.game_name == game_item.game_name:
+                self._current_game: GameOutput = game
+                break
+        self._set_next_game()
+
+    def _set_next_game(self) -> None:
         self._score_1_le.clear()
         self._score_2_le.clear()
         current_game: GameOutput = self._get_current_game()
@@ -282,15 +334,56 @@ class MainWindow(BaseWindow):
 
         self._set_add_score_btn()
 
-    def _set_second_round(self):
+    def _set_second_round(self) -> None:
         league_item: LeagueListItem = self._get_current_league()
+        current_game: GameOutput = self._get_current_game()
+
         if not league_item.league.second_round and self._table_tabs.currentIndex() == 1:
             self._table_tabs.setCurrentIndex(0)
-        self._second_round_btn.setEnabled(league_item.league.second_round)
-        self._table_tabs.setTabEnabled(1, league_item.league.second_round)
 
-    def _set_add_score_btn(self):
-        self._add_score_btn.setEnabled(self._is_valid_input())
+        self._table_tabs.setTabEnabled(1, league_item.league.second_round)
+        self._second_round_btn.setEnabled(league_item.league.second_round)
+
+        if current_game.first_round:
+            self._first_round_btn.setStyleSheet("background-color: light grey")
+            self._second_round_btn.setStyleSheet("background-color: white")
+            if not self._table_tabs.currentIndex() == 2:
+                self._table_tabs.setCurrentIndex(0)
+        else:
+            self._first_round_btn.setStyleSheet("background-color: white")
+            self._second_round_btn.setStyleSheet("background-color: light grey")
+            if not self._table_tabs.currentIndex() == 2:
+                self._table_tabs.setCurrentIndex(1)
+
+    def _set_tables(self, table_type: TableType):
+        league_item: LeagueListItem = self._get_current_league()
+
+        dummy_list: tuple[list] | None = None
+        dummy: QTableWidget | None = None
+        match table_type:
+            case TableType.FIRST:
+                dummy_list: tuple[list] = league_item.league.first_round_table
+                dummy: QTableWidget = self._first_round_table
+            case TableType.SECOND:
+                if not league_item.league.second_round:
+                    return
+                dummy_list: tuple[list] = league_item.league.second_round_table
+                dummy: QTableWidget = self._second_round_table
+            case TableType.TOTAL:
+                dummy_list: tuple[list] = league_item.league.total_table
+                dummy: QTableWidget = self._total_table
+
+        dummy.clear()
+        dummy.setRowCount(len(dummy_list))
+        dummy.setColumnCount(len(dummy_list[0]))
+
+        for row, _ in enumerate(dummy_list):
+            for column, item in enumerate(dummy_list[row]):
+                dummy.setItem(row, column, QTableWidgetItem(item))
+        dummy.update()
+
+    def _set_add_score_btn(self) -> None:
+        self._add_score_btn.setEnabled(True)
 
     def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
@@ -324,13 +417,49 @@ class MainWindow(BaseWindow):
             league_item: LeagueListItem = self._get_current_league()
             return league_item.league.next_game
 
-    def _is_valid_input(self) -> bool:
-        return False
+    def _is_valid_input(self, check: StartCheck = StartCheck.CHECK) -> bool:
+        current_game: GameOutput = self._get_current_game()
+
+        text: str = self._score_1_le.text()
+        if len(text.strip()) == 0:
+            if check == StartCheck.START:
+                self.set_status_bar("Team %s hat keinen Eintrag" % current_game.team_1_name)
+            return False
+        if not text.isdigit():
+            if check == StartCheck.START:
+                self.set_status_bar("%s ist keine valide Zahl" % text)
+            return False
+
+        text: str = self._score_2_le.text()
+        if len(text.strip()) == 0:
+            if check == StartCheck.START:
+                self.set_status_bar("Team %s hat keinen Eintrag" % current_game.team_2_name)
+            return False
+        if not text.isdigit():
+            if check == StartCheck.START:
+                self.set_status_bar("%s ist keine valide Zahl" % text)
+            return False
+
+        return True
+
+    def _add_entry(self, start_check: StartCheck) -> None:
+        if self._is_valid_input(start_check):
+            league_item: LeagueListItem = self._get_current_league()
+            current_game = self._get_current_game()
+            team_score_1: int = int(self._score_1_le.text())
+            team_score_2: int = int(self._score_2_le.text())
+            output: ResultOutput(league_name=league_item.league_name, team_name_1=current_game.team_1_name,
+                                 team_name_2=current_game.team_1_name, team_score_1=team_score_1,
+                                 team_score_2=team_score_2, first_round=current_game.first_round)
+            if current_game.finished:
+                pass
+            else:
+                pass
 
 
 window: MainWindow | None = None
 
 
-def create_main_window(initial_input: tuple):
+def create_main_window(initial_input: tuple) -> None:
     global window
     window = MainWindow(initial_input=initial_input)
