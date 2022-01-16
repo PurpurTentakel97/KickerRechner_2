@@ -96,7 +96,7 @@ class League:
             for team_1_int, team_2_int in games.items():
                 team_name_1: str = self._get_name_from_team(team_to_check=self.teams[team_1_int - 1])
                 team_name_2: str = self._get_name_from_team(team_to_check=self.teams[team_2_int - 1])
-                final_game: Game = Game(game_name=team_name_1 + " : " + team_name_2, team_1=self.teams[team_1_int - 1],
+                final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2, team_1=self.teams[team_1_int - 1],
                                         team_2=self.teams[team_2_int - 1], game_day=day, first_round=True)
                 self.games.append(final_game)
 
@@ -105,7 +105,7 @@ class League:
                 for team_1_int, team_2_int in games.items():
                     team_name_1: str = self._get_name_from_team(team_to_check=self.teams[team_1_int - 1])
                     team_name_2: str = self._get_name_from_team(team_to_check=self.teams[team_2_int - 1])
-                    final_game: Game = Game(game_name=team_name_1 + " : " + team_name_2,
+                    final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2,
                                             team_1=self.teams[team_1_int - 1],
                                             team_2=self.teams[team_2_int - 1], game_day=day, first_round=False)
                     self.games.append(final_game)
