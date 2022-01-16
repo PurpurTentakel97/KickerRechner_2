@@ -310,10 +310,6 @@ class MainWindow(BaseWindow):
         league_item: LeagueListItem = self._get_current_league()
         game_item: GameListItem = self._game_list.currentItem()
         for game in league_item.league.all_games:
-            print("//")
-            print(game.game_name)
-            print(game_item.game_name)
-            print("//")
             if game.game_name == game_item.game_name:
                 self._current_game = game
                 break
@@ -393,7 +389,10 @@ class MainWindow(BaseWindow):
         self._add_score_btn.setEnabled(self._is_valid_input())
 
     def _set_focus(self):
-        self._score_1_le.setFocus()
+        if len(self._score_1_le.text().strip()) == 0:
+            self._score_1_le.setFocus()
+        else:
+            self._score_2_le.setFocus()
 
     def _set_ui_list_item(self, list_type: ListType, list_item_1: QListWidgetItem) -> None:
         match list_type:
@@ -434,20 +433,24 @@ class MainWindow(BaseWindow):
         if len(text.strip()) == 0:
             if check == StartCheck.START:
                 self.set_status_bar("Team %s hat keinen Eintrag" % current_game.team_1_name)
+                self._score_1_le.setFocus()
             return False
         if not text.isdigit():
             if check == StartCheck.START:
                 self.set_status_bar("%s ist keine valide Zahl" % text)
+                self._score_1_le.setFocus()
             return False
 
         text: str = self._score_2_le.text()
         if len(text.strip()) == 0:
             if check == StartCheck.START:
                 self.set_status_bar("Team %s hat keinen Eintrag" % current_game.team_2_name)
+                self._score_2_le.setFocus()
             return False
         if not text.isdigit():
             if check == StartCheck.START:
                 self.set_status_bar("%s ist keine valide Zahl" % text)
+                self._score_2_le.setFocus()
             return False
 
         return True

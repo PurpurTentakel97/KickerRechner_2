@@ -245,6 +245,7 @@ class League:
     def _get_ranked_teams_with_stats_for_total_table(self) -> list[dict]:
         teams_with_stats = dict()
         for team in self.teams:
+            team.set_total_values()
             stats_of_team: dict[Stats] = dict()
             stats_of_team[Stats.POINTS] = team.points
             stats_of_team[Stats.GOALS] = team.goals
