@@ -35,7 +35,8 @@ class LeagueOutput:
 
 
 class League:
-    def __init__(self, name: str, is_active: bool, is_second_round: bool, team_names: list[str]) -> None:
+    def __init__(self, name: str, is_active: bool, is_second_round: bool, team_names: list[str] | None = None,
+                 is_load: bool = False) -> None:
         self.name: str = name
         self.is_active: bool = is_active
         self.is_second_round: bool = is_second_round
@@ -44,8 +45,9 @@ class League:
         self.games: list[Game] = list()
         self.finished: bool = False
 
-        self._create_teams(team_names=team_names)
-        self._create_games()
+        if not is_load:
+            self._create_teams(team_names=team_names)
+            self._create_games()
 
     def _create_teams(self, team_names: list[str]) -> None:
         for team_name in team_names:
@@ -221,18 +223,18 @@ class League:
         for team in self.teams:
             stats_of_team: dict[Stats] = dict()
             stats_of_team[Stats.POINTS] = team.first_round_points if table_type == TableType.FIRST \
-                                            else team.second_round_points
+                else team.second_round_points
             stats_of_team[Stats.GOALS] = team.first_round_goals if table_type == TableType.FIRST \
-                                            else team.second_round_goals
+                else team.second_round_goals
             stats_of_team[Stats.COUNTER_GOALS] = team.first_round_counter_goals if table_type == TableType.FIRST \
-                                            else team.second_round_counter_goals
+                else team.second_round_counter_goals
             stats_of_team[Stats.GOAL_DIFF] = team.first_round_goals - team.first_round_counter_goals \
-                                            if table_type == TableType.FIRST \
-                                            else team.second_round_goals - team.second_round_counter_goals
+                if table_type == TableType.FIRST \
+                else team.second_round_goals - team.second_round_counter_goals
             stats_of_team[Stats.BALANCE] = (str(team.first_round_wins) + " / " + str(team.first_round_draw) +
                                             " / " + str(team.first_round_loose)) if table_type == TableType.FIRST \
-                                            else (str(team.second_round_wins) + " / " + str(team.second_round_draw) +
-                                            " / " + str(team.second_round_loose))
+                else (str(team.second_round_wins) + " / " + str(team.second_round_draw) +
+                      " / " + str(team.second_round_loose))
             teams_with_stats[team] = stats_of_team
 
         teams_with_stats = list(teams_with_stats.items())
@@ -261,7 +263,7 @@ class League:
                                              x[1][Stats.COUNTER_GOALS]), reverse=True)
         return teams_with_stats
 
-    def add_edit_entry(self, result_input):
+    def add_edit_entry(self, result_input) -> None:
         team_1: Team = self._get_team_from_name(result_input.team_name_1)
         team_2: Team = self._get_team_from_name(result_input.team_name_2)
         game: Game = self._get_game_from_teams(team_1=team_1, team_2=team_2)
@@ -276,3 +278,38 @@ class League:
                 finished: bool = False
                 break
         self.finished: bool = finished
+
+    def load_team(self, team_data: dict) -> None:
+        team: Team = Team(team_data["name"])
+
+        team.first_round_points = team_data["first_round_points"]
+        team.second_round_points = team_data["second_round_points"]
+
+        team.first_round_goals = team_data["first_round_goals"]
+        team.second_round_goals = team_data["second_round_goals"]
+
+        team.first_round_counter_goals = team_data["first_round_counter_goals"]
+        team.second_round_counter_goals = team_data["second_round_counter_goals"]
+
+        team.first_round_wins = team_data["first_round_wins"]
+        team.second_round_wins = team_data["second_round_wins"]
+
+        team.first_round_draw = team_data["first_round_draw"]
+        team.second_round_draw = team_data["second_round_draw"]
+
+        team.first_round_loose = team_data["first_round_loose"]
+        team.second_round_loose = team_data["second_round_loose"]
+
+        self.teams.append(team)
+
+    def load_game(self, game_data: dict) -> None:
+        game: Game = Game(game_name=game_data["name"],
+                          team_1=self._get_team_from_name(team_name=game_data["team_1_name"]),
+                          team_2=self._get_team_from_name(team_name=game_data["team_2_name"]),
+                          game_day=game_data["day"], first_round=game_data["first_round"])
+        game.score_team_1 = game_data["score_team_1"]
+        game.score_team_2 = game_data["score_team_2"]
+        game.team_1_result = game_data["team_1_result"]
+        game.team_2_result = game_data["team_2_result"]
+        game.finished = game_data["finished"]
+        self.games.append(game)

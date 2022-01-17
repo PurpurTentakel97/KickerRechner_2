@@ -11,8 +11,7 @@ from PyQt5.QtGui import QColor
 import transition
 from gui.base_window import BaseWindow
 from gui.enum_sheet import StartCheck
-
-from logic import main_manager
+from gui import base_window
 
 
 class LeagueListItem(QListWidgetItem):
@@ -541,4 +540,5 @@ def create_input_window():
     app = QApplication(sys.argv)
     global window
     window = InputWindow()
+    base_window.window = window
     app.exec_()

@@ -85,9 +85,15 @@ def _is_tournaments_finished() -> bool:
     return finished
 
 
-def save(filename: str):
+def create_saves_directory():
     if not os.path.exists("saves"):
         os.mkdir("saves")
+
+
+def save(filename: str):
+    path = os.path.dirname(filename)
+    if not os.path.exists(path):
+        os.mkdir(path)
 
     output: dict = dict()
     for league_index, league in enumerate(all_leagues):
@@ -120,5 +126,39 @@ def save(filename: str):
                                "teams": all_teams_output, "games": all_games_output}
         output[league_index] = league_output
 
-    with open(f"saves/{filename}.json", "w") as file:
+    with open(filename, "w") as file:
         json.dump(output, file, indent=2)
+    _, tail = os.path.split(filename)
+    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+
+
+def load(filename: str):
+    if os.path.exists(filename):
+        all_leagues.clear()
+        active_leagues.clear()
+
+        with open(filename, "r") as file:
+            data: dict = json.load(file)
+        for league_index in range(len(data)):
+            league_data: dict = data[str(league_index)]
+            league: League = League(name=league_data["name"], is_active=league_data["is_active"],
+                                    is_second_round=league_data["is_second_round"], is_load=True)
+
+            for team_index in range(len(league_data["teams"])):
+                team_data: dict = league_data["teams"][str(team_index)]
+                league.load_team(team_data=team_data)
+
+            for game_index in range(len(league_data["games"])):
+                game_data: dict = league_data["games"][str(game_index)]
+                league.load_game(game_data=game_data)
+
+            all_leagues.append(league)
+            if league.is_active:
+                active_leagues.append(league)
+
+        transition.close_window()
+        _put_data_to_main_window()
+        _, tail = os.path.split(filename)
+        transition.show_massage('"%s" geladen' % tail)
+    else:
+        transition.show_massage("Datei nicht gefunden")

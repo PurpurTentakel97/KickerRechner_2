@@ -2,10 +2,12 @@
 # 09.01.2022
 # KickerRechner // Base Window
 
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu, QFileDialog
 from PyQt5.QtGui import QIcon
 
 import transition
+
+window: QMainWindow | None = None
 
 
 class BaseWindow(QMainWindow):
@@ -31,7 +33,6 @@ class BaseWindow(QMainWindow):
         restart_action.triggered.connect(self._restart)
 
         close_action: QAction = QAction(QIcon("gui/Icons/quit_icon.png"), '&Schließen', self)
-        close_action.setShortcut("Alt+F4")
         close_action.triggered.connect(self._quit)
 
         menu_bar: QMenuBar = self.menuBar()
@@ -51,17 +52,34 @@ class BaseWindow(QMainWindow):
         self.statusBar().showMessage("Info: " + massage, 5000)
 
     def _save(self):
-        print("saved")
-        transition.save(filename="Neues File")
+        self.set_status_bar("Im Input Window kann nicht gespeichert werden.")
 
     def _load(self):
-        self._save()
-        print("loaded")
+        self.load()
 
     def _restart(self):
-        self._save()
+        self.restart()
+
+    @staticmethod
+    def _quit():
+        qApp.quit()
+
+    def load(self):
+        transition.crate_save_directory()
+        file_name, check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
+                                                       "saves", "KickerRechner(*.json)")
+        if check:
+            transition.load(filename=file_name)
+        else:
+            self.set_status_bar("Keine Datei geladen")
+
+    @staticmethod
+    def restart():
         print("restart")
 
-    def _quit(self):
-        self._save()
+    @staticmethod
+    def quit():
         qApp.quit()
+
+    def close_(self):
+        self.close()

@@ -2,7 +2,7 @@
 # 12.01.2022
 # KickerRechner //Transition
 from logic import main_manager
-from gui import input_window, main_window
+from gui import input_window, main_window, base_window
 
 
 class ResultInput:
@@ -88,3 +88,19 @@ def put_main_window_data_to_logic(output_: main_window.ResultOutput) -> None:
 
 def save(filename: str) -> None:
     main_manager.save(filename=filename)
+
+
+def load(filename: str) -> None:
+    main_manager.load(filename=filename)
+
+
+def show_massage(massage: str) -> None:
+    base_window.window.set_status_bar(massage=massage)
+
+
+def crate_save_directory():
+    main_manager.create_saves_directory()
+
+
+def close_window():
+    base_window.window.close_()

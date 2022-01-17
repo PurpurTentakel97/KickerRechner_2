@@ -3,12 +3,13 @@
 # KickerRechner // Main Window
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QTableWidget, \
-    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QAbstractItemView, QMessageBox
+    QTableWidgetItem, QTabWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QAbstractItemView, QMessageBox, QFileDialog
 from PyQt5.QtGui import QIntValidator
 
 import transition
 from gui.base_window import BaseWindow
 from gui.enum_sheet import ListType, TableType, StartCheck
+from gui import base_window
 
 
 class LeagueListItem(QListWidgetItem):
@@ -509,6 +510,42 @@ class MainWindow(BaseWindow):
         if self.finished:
             self._display_finished()
 
+    def _save(self):
+        transition.crate_save_directory()
+        file_name, check = QFileDialog.getSaveFileName(None, "QFileDialog.getOpenFileName()",
+                                                       "saves", "KickerRechner(*.json)")
+        if check:
+            transition.save(filename=file_name)
+        else:
+            self.set_status_bar("Nicht gespeichert")
+
+    def _load(self):
+        if self._get_save_bool():
+            self._save()
+        self.load()
+
+    def _restart(self):
+        if self._get_save_bool():
+            self._save()
+        self.restart()
+
+    def _quit(self):
+        if self._get_save_bool():
+            self._save()
+        self.quit()
+
+    def _get_save_bool(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Question)
+
+        msg.setText("Möchtest du Speichern?")
+        msg.setInformativeText("Deine Daten gehen verloren, wenn du nicht speicherst.")
+        msg.setWindowTitle("Speichern?")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Yes
+
 
 window: MainWindow | None = None
 
@@ -516,3 +553,4 @@ window: MainWindow | None = None
 def create_main_window(initial_input: tuple) -> None:
     global window
     window = MainWindow(initial_input=initial_input)
+    base_window.window = window
