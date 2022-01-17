@@ -95,10 +95,10 @@ def save(filename: str):
     if not os.path.exists(path):
         os.mkdir(path)
 
-    output: dict = dict()
+    output: list = list()
     for league_index, league in enumerate(all_leagues):
 
-        all_teams_output: dict = dict()
+        all_teams_output:list = list()
         for team_index, team in enumerate(league.teams):
             team_output: dict = {"name": team.name, "first_round_points": team.first_round_points,
                                  "second_round_points": team.second_round_points,
@@ -110,21 +110,21 @@ def save(filename: str):
                                  "first_round_draw": team.first_round_draw, "second_round_draw": team.second_round_draw,
                                  "first_round_loose": team.first_round_loose,
                                  "second_round_loose": team.second_round_loose}
-            all_teams_output[team_index] = team_output
+            all_teams_output.append(team_output)
 
-        all_games_output: dict = dict()
+        all_games_output: list = list()
         for game_index, game in enumerate(league.games):
             game_output: dict = {"name": game.game_name, "team_1_name": league.get_name_from_team(game.team_1),
                                  "team_2_name": league.get_name_from_team(game.team_2), "day": game.game_day,
                                  "first_round": game.first_round, "score_team_1": game.score_team_1,
                                  "score_team_2": game.score_team_2, "team_1_result": game.team_1_result,
                                  "team_2_result": game.team_2_result, "finished": game.finished}
-            all_games_output[game_index] = game_output
+            all_games_output.append(game_output)
 
         league_output: dict = {"name": league.name, "is_active": league.is_active,
                                "is_second_round": league.is_second_round, "finished": league.finished,
                                "teams": all_teams_output, "games": all_games_output}
-        output[league_index] = league_output
+        output.append(league_output)
 
     with open(filename, "w") as file:
         json.dump(output, file, indent=4)
@@ -140,16 +140,16 @@ def load(filename: str):
         with open(filename, "r") as file:
             data: dict = json.load(file)
         for league_index in range(len(data)):
-            league_data: dict = data[str(league_index)]
+            league_data: dict = data[league_index]
             league: League = League(name=league_data["name"], is_active=league_data["is_active"],
                                     is_second_round=league_data["is_second_round"], is_load=True)
 
             for team_index in range(len(league_data["teams"])):
-                team_data: dict = league_data["teams"][str(team_index)]
+                team_data: dict = league_data["teams"][team_index]
                 league.load_team(team_data=team_data)
 
             for game_index in range(len(league_data["games"])):
-                game_data: dict = league_data["games"][str(game_index)]
+                game_data: dict = league_data["games"][game_index]
                 league.load_game(game_data=game_data)
 
             all_leagues.append(league)
