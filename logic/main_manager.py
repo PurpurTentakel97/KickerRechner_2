@@ -127,7 +127,7 @@ def save(filename: str):
         output[league_index] = league_output
 
     with open(filename, "w") as file:
-        json.dump(output, file, indent=2)
+        json.dump(output, file, indent=4)
     _, tail = os.path.split(filename)
     transition.show_massage('Turnier gespeichert als "%s"' % tail)
 

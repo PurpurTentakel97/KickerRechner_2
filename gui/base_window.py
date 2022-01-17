@@ -2,7 +2,7 @@
 # 09.01.2022
 # KickerRechner // Base Window
 
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu, QFileDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 
 import transition
@@ -60,9 +60,9 @@ class BaseWindow(QMainWindow):
     def _restart(self):
         self.restart()
 
-    @staticmethod
-    def _quit():
-        qApp.quit()
+    def _quit(self):
+        if self._get_close_commit():
+            qApp.quit()
 
     def load(self):
         transition.crate_save_directory()
@@ -83,3 +83,17 @@ class BaseWindow(QMainWindow):
 
     def close_(self):
         self.close()
+
+    def _get_close_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Möchtest du den KickerRechner schlißen?")
+        msg.setInformativeText('Du kannst im InputWindow nicht speichen. '
+                               'Starte das Tunier, wenn du vorher Speichern willst. '
+                               'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
+        msg.setWindowTitle("KickerRechner Beenden?")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok

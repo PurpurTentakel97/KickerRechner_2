@@ -530,9 +530,10 @@ class MainWindow(BaseWindow):
         self.restart()
 
     def _quit(self):
-        if self._get_save_bool():
-            self._save()
-        self.quit()
+        if self._get_close_commit():
+            if self._get_save_bool():
+                self._save()
+            self.quit()
 
     def _get_save_bool(self) -> bool:
         msg = QMessageBox(self)
@@ -545,6 +546,17 @@ class MainWindow(BaseWindow):
         retval = msg.exec_()
 
         return retval == QMessageBox.Yes
+
+    def _get_close_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Möchtest du den KickerRechner schlißen?")
+        msg.setWindowTitle("KickerRechner Beenden?")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok
 
 
 window: MainWindow | None = None
