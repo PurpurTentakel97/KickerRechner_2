@@ -16,8 +16,8 @@ class Game:
 
         self.score_team_1: int = int()
         self.score_team_2: int = int()
-        self._team_1_result: Result | None = None
-        self._team_2_result: Result | None = None
+        self.team_1_result: Result | None = None
+        self.team_2_result: Result | None = None
         self.finished: bool = False
 
     def get_result_string_from_team_view(self, team: Team) -> str:
@@ -39,14 +39,14 @@ class Game:
             self.score_team_1: int = result_input.team_score_2
 
         if self.score_team_1 > self.score_team_2:
-            self._team_1_result: Result = Result.WIN
-            self._team_2_result: Result = Result.LOOSE
+            self.team_1_result: Result = Result.WIN
+            self.team_2_result: Result = Result.LOOSE
         elif self.score_team_1 == self.score_team_2:
-            self._team_1_result: Result = Result.DRAW
-            self._team_2_result: Result = Result.DRAW
+            self.team_1_result: Result = Result.DRAW
+            self.team_2_result: Result = Result.DRAW
         else:
-            self._team_1_result: Result = Result.LOOSE
-            self._team_2_result: Result = Result.WIN
+            self.team_1_result: Result = Result.LOOSE
+            self.team_2_result: Result = Result.WIN
 
         self.finished: bool = True
         self._add_team_statistics()
@@ -54,8 +54,8 @@ class Game:
     def _add_team_statistics(self):
         match self.first_round:
             case True:
-                self.team_1.first_round_points += self._team_1_result
-                self.team_2.first_round_points += self._team_2_result
+                self.team_1.first_round_points += self.team_1_result
+                self.team_2.first_round_points += self.team_2_result
 
                 self.team_1.first_round_goals += self.score_team_1
                 self.team_2.first_round_goals += self.score_team_2
@@ -63,7 +63,7 @@ class Game:
                 self.team_1.first_round_counter_goals += self.score_team_2
                 self.team_2.first_round_counter_goals += self.score_team_1
 
-                match self._team_1_result:
+                match self.team_1_result:
                     case Result.WIN:
                         self.team_1.first_round_wins += 1
                         self.team_2.first_round_loose += 1
@@ -75,8 +75,8 @@ class Game:
                         self.team_2.first_round_wins += 1
 
             case False:
-                self.team_1.second_round_points += self._team_1_result
-                self.team_2.second_round_points += self._team_2_result
+                self.team_1.second_round_points += self.team_1_result
+                self.team_2.second_round_points += self.team_2_result
 
                 self.team_1.second_round_goals += self.score_team_1
                 self.team_2.second_round_goals += self.score_team_2
@@ -84,7 +84,7 @@ class Game:
                 self.team_1.second_round_counter_goals += self.score_team_2
                 self.team_2.second_round_counter_goals += self.score_team_1
 
-                match self._team_1_result:
+                match self.team_1_result:
                     case Result.WIN:
                         self.team_1.second_round_wins += 1
                         self.team_2.second_round_loose += 1
@@ -102,8 +102,8 @@ class Game:
     def _remove_team_statistics(self):
         match self.first_round:
             case True:
-                self.team_1.first_round_points -= self._team_1_result
-                self.team_2.first_round_points -= self._team_2_result
+                self.team_1.first_round_points -= self.team_1_result
+                self.team_2.first_round_points -= self.team_2_result
 
                 self.team_1.first_round_goals -= self.score_team_1
                 self.team_2.first_round_goals -= self.score_team_2
@@ -111,7 +111,7 @@ class Game:
                 self.team_1.first_round_counter_goals -= self.score_team_2
                 self.team_2.first_round_counter_goals -= self.score_team_1
 
-                match self._team_1_result:
+                match self.team_1_result:
                     case Result.WIN:
                         self.team_1.first_round_wins -= 1
                         self.team_2.first_round_loose -= 1
@@ -123,8 +123,8 @@ class Game:
                         self.team_2.first_round_wins -= 1
 
             case False:
-                self.team_1.second_round_points -= self._team_1_result
-                self.team_2.second_round_points -= self._team_2_result
+                self.team_1.second_round_points -= self.team_1_result
+                self.team_2.second_round_points -= self.team_2_result
 
                 self.team_1.second_round_goals -= self.score_team_1
                 self.team_2.second_round_goals -= self.score_team_2
@@ -132,7 +132,7 @@ class Game:
                 self.team_1.second_round_counter_goals -= self.score_team_2
                 self.team_2.second_round_counter_goals -= self.score_team_1
 
-                match self._team_1_result:
+                match self.team_1_result:
                     case Result.WIN:
                         self.team_1.second_round_wins -= 1
                         self.team_2.second_round_loose -= 1

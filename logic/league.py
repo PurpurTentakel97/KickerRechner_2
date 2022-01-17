@@ -93,8 +93,8 @@ class League:
 
         for day, games in matches.items():
             for team_1_int, team_2_int in games.items():
-                team_name_1: str = self._get_name_from_team(team_to_check=self.teams[team_1_int - 1])
-                team_name_2: str = self._get_name_from_team(team_to_check=self.teams[team_2_int - 1])
+                team_name_1: str = self.get_name_from_team(team_to_check=self.teams[team_1_int - 1])
+                team_name_2: str = self.get_name_from_team(team_to_check=self.teams[team_2_int - 1])
                 final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2,
                                         team_1=self.teams[team_1_int - 1],
                                         team_2=self.teams[team_2_int - 1], game_day=day, first_round=True)
@@ -103,8 +103,8 @@ class League:
         if self.is_second_round:
             for day, games in inv_matches.items():
                 for team_1_int, team_2_int in games.items():
-                    team_name_1: str = self._get_name_from_team(team_to_check=self.teams[team_1_int - 1])
-                    team_name_2: str = self._get_name_from_team(team_to_check=self.teams[team_2_int - 1])
+                    team_name_1: str = self.get_name_from_team(team_to_check=self.teams[team_1_int - 1])
+                    team_name_2: str = self.get_name_from_team(team_to_check=self.teams[team_2_int - 1])
                     final_game: Game = Game(game_name=team_name_1 + "  :  " + team_name_2,
                                             team_1=self.teams[team_1_int - 1],
                                             team_2=self.teams[team_2_int - 1], game_day=day, first_round=False)
@@ -128,7 +128,7 @@ class League:
             total_table=self._get_total_table())
         return league_output
 
-    def _get_name_from_team(self, team_to_check: Team) -> str:
+    def get_name_from_team(self, team_to_check: Team) -> str:
         for team in self.teams:
             if team == team_to_check:
                 return team.name
@@ -158,8 +158,8 @@ class League:
         for current_game in self.games:
             single_game: GameOutput = GameOutput(
                 game_name=current_game.game_name,
-                team_1_name=self._get_name_from_team(current_game.team_1),
-                team_2_name=self._get_name_from_team(current_game.team_2),
+                team_1_name=self.get_name_from_team(current_game.team_1),
+                team_2_name=self.get_name_from_team(current_game.team_2),
                 game_day=current_game.game_day,
                 first_round=current_game.first_round,
                 score_team_1=current_game.score_team_1,
@@ -179,11 +179,11 @@ class League:
         headers: list[str] = ["Rang", "Spiele"]
         ranked_teams_with_stats: list[dict] = self._get_ranked_teams_with_stats_for_round_tables(table_type=table_type)
         for team, *_ in ranked_teams_with_stats:
-            headers.append(self._get_name_from_team(team_to_check=team))
+            headers.append(self.get_name_from_team(team_to_check=team))
         headers.extend(["Punkte", "Tor-Diff", "Tore", "Gegentore", "Bilanz"])
         table.append(headers)
         for rank, (team, stats) in enumerate(ranked_teams_with_stats, start=1):
-            row: list[str] = [str(rank), self._get_name_from_team(team_to_check=team)]
+            row: list[str] = [str(rank), self.get_name_from_team(team_to_check=team)]
             for opponent, *_ in ranked_teams_with_stats:
                 if team == opponent:
                     row.append("-----")

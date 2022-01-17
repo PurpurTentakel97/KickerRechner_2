@@ -2,7 +2,8 @@
 # 09.01.2022
 # KickerRechner // Manager
 # __Main_Sheet__
-import os.path
+import json
+import os
 
 import transition
 from logic.league import League, LeagueOutput
@@ -85,4 +86,39 @@ def _is_tournaments_finished() -> bool:
 
 
 def save(filename: str):
-    pass
+    if not os.path.exists("saves"):
+        os.mkdir("saves")
+
+    output: dict = dict()
+    for league_index, league in enumerate(all_leagues):
+
+        all_teams_output: dict = dict()
+        for team_index, team in enumerate(league.teams):
+            team_output: dict = {"name": team.name, "first_round_points": team.first_round_points,
+                                 "second_round_points": team.second_round_points,
+                                 "first_round_goals": team.first_round_goals,
+                                 "second_round_goals": team.second_round_goals,
+                                 "first_round_counter_goals": team.first_round_counter_goals,
+                                 "second_round_counter_goals": team.second_round_counter_goals,
+                                 "first_round_wins": team.first_round_wins, "second_round_wins": team.second_round_wins,
+                                 "first_round_draw": team.first_round_draw, "second_round_draw": team.second_round_draw,
+                                 "first_round_loose": team.first_round_loose,
+                                 "second_round_loose": team.second_round_loose}
+            all_teams_output[team_index] = team_output
+
+        all_games_output: dict = dict()
+        for game_index, game in enumerate(league.games):
+            game_output: dict = {"name": game.game_name, "team_1_name": league.get_name_from_team(game.team_1),
+                                 "team_2_name": league.get_name_from_team(game.team_2), "day": game.game_day,
+                                 "first_round": game.first_round, "score_team_1": game.score_team_1,
+                                 "score_team_2": game.score_team_2, "team_1_result": game.team_1_result,
+                                 "team_2_result": game.team_2_result, "finished": game.finished}
+            all_games_output[game_index] = game_output
+
+        league_output: dict = {"name": league.name, "is_active": league.is_active,
+                               "is_second_round": league.is_second_round, "finished": league.finished,
+                               "teams": all_teams_output, "games": all_games_output}
+        output[league_index] = league_output
+
+    with open(f"saves/{filename}.json", "w") as file:
+        json.dump(output, file, indent=2)

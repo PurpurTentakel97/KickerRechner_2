@@ -209,7 +209,7 @@ class MainWindow(BaseWindow):
         self.widget.setLayout(global_vbox)
         self.set_widget(widget=self.widget)
 
-        self.showMaximized()
+        self.show()
 
     def _create_leagues(self) -> None:
         self._clear_ui_list(ListType.LEAGUE)
