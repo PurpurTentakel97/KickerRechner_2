@@ -210,7 +210,7 @@ class MainWindow(BaseWindow):
         self.widget.setLayout(global_vbox)
         self.set_widget(widget=self.widget)
 
-        self.show()
+        self.showMaximized()
 
     def _create_leagues(self) -> None:
         self._clear_ui_list(ListType.LEAGUE)
@@ -525,9 +525,10 @@ class MainWindow(BaseWindow):
         self.load()
 
     def _restart(self):
-        if self._get_save_bool():
-            self._save()
-        self.restart()
+        if self._get_restart_commit():
+            if self._get_save_bool():
+                self._save()
+            self.restart()
 
     def _quit(self):
         if self._get_close_commit():
@@ -553,6 +554,19 @@ class MainWindow(BaseWindow):
 
         msg.setText("Möchtest du den KickerRechner schlißen?")
         msg.setWindowTitle("KickerRechner Beenden?")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok
+
+    def _get_restart_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Möchtest das Turnier neu starten?")
+        msg.setInformativeText('Möchtest du das Turnier neu starten?'
+                               'Es wird sich das Import-Window mit deiner Eingabe öffnen.')
+        msg.setWindowTitle("Turnier Neustarten?")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         retval = msg.exec_()
 

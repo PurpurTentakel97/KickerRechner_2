@@ -10,12 +10,14 @@ from logic.league import League, LeagueOutput
 
 all_leagues: list[League] = list()
 active_leagues: list[League] = list()
+tail: str | None = None
 
 if __name__ == "__main__":
-    transition.create_input_window()
+    transition.create_first_input_window()
 
 
 def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, list[str]]]):
+    print(initial_input)
     for league_name, is_active, second_round, teams_names in initial_input:
         league: League = League(name=league_name, is_active=is_active, is_second_round=second_round,
                                 team_names=teams_names)
@@ -36,6 +38,24 @@ def _put_data_to_main_window() -> None:
     for league in active_leagues:
         output.append(league.get_output())
     transition.put_logic_data_to_main_window(tuple(output))
+
+
+def _update_data_to_input_window() -> None:
+    output_: list = list()
+    for league in all_leagues:
+        team_names: list[str] = list()
+        for team in league.teams:
+            team_names.append(league.get_name_from_team(team))
+        league_dict: dict = {"name": league.name,
+                             "active": league.is_active,
+                             "second_round": league.is_second_round,
+                             "teams": team_names}
+        output_.append(league_dict)
+    transition.put_logic_data_to_input_window(output_=tuple(output_))
+    if tail is not None:
+        transition.show_massage("Grunddaten von %s geladen" % tail)
+    else:
+        transition.show_massage("Keine Daten Vorhanden")
 
 
 def _update_data_in_main_window() -> None:
@@ -98,7 +118,7 @@ def save(filename: str):
     output: list = list()
     for league_index, league in enumerate(all_leagues):
 
-        all_teams_output:list = list()
+        all_teams_output: list = list()
         for team_index, team in enumerate(league.teams):
             team_output: dict = {"name": team.name, "first_round_points": team.first_round_points,
                                  "second_round_points": team.second_round_points,
@@ -128,6 +148,7 @@ def save(filename: str):
 
     with open(filename, "w") as file:
         json.dump(output, file, indent=4)
+    global tail
     _, tail = os.path.split(filename)
     transition.show_massage('Turnier gespeichert als "%s"' % tail)
 
@@ -158,7 +179,14 @@ def load(filename: str):
 
         transition.close_window()
         _put_data_to_main_window()
+        global tail
         _, tail = os.path.split(filename)
         transition.show_massage('"%s" geladen' % tail)
     else:
         transition.show_massage("Datei nicht gefunden")
+
+
+def restart():
+    transition.close_window()
+    transition.create_input_window()
+    _update_data_to_input_window()

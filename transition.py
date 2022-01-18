@@ -44,8 +44,16 @@ class LeagueInput:
         self.total_table: tuple[list] = total_table
 
 
+def create_first_input_window() -> None:
+    input_window.create_first_input_window()
+
+
 def create_input_window() -> None:
     input_window.create_input_window()
+
+
+def put_logic_data_to_input_window(output_: tuple) -> None:
+    input_window.window.update_data(input_=output_)
 
 
 def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None = None, finished: bool = False) -> None:
@@ -92,6 +100,10 @@ def save(filename: str) -> None:
 
 def load(filename: str) -> None:
     main_manager.load(filename=filename)
+
+
+def restart():
+    main_manager.restart()
 
 
 def show_massage(massage: str) -> None:

@@ -532,13 +532,45 @@ class InputWindow(BaseWindow):
             self.close()
             transition.put_input_window_data_to_logic(tuple(output))
 
+    def update_data(self, input_: tuple) -> None:
+        self._league_list.clear()
+        self.leagues.clear()
+        self.teams.clear()
+        if len(input_) != 0:
+            for league in input_:
+                league_item: LeagueListItem = LeagueListItem(len(self._league_list))
+                league_item.update_text(league["name"])
+                league_item.active = league["active"]
+                league_item.second_round = league["second_round"]
 
-window = InputWindow
+                teams: list = list()
+                for team_name in league["teams"]:
+                    team_item: TeamListItem = TeamListItem(name=team_name, index=len(teams))
+                    teams.append(team_item)
+
+                self.leagues.append(league_item)
+                self._league_list.addItem(league_item)
+                self.teams.append(teams)
+
+            for league in reversed(self.leagues):
+                self._league_list.setCurrentItem(league)
+                self._set_current_league()
+        else:
+            self._create_initial_league()
 
 
-def create_input_window():
+window: InputWindow | None = None
+
+
+def create_first_input_window():
     app = QApplication(sys.argv)
     global window
     window = InputWindow()
     base_window.window = window
     app.exec_()
+
+
+def create_input_window():
+    global window
+    window = InputWindow()
+    base_window.window = window

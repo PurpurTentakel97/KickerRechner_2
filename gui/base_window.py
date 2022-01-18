@@ -58,7 +58,8 @@ class BaseWindow(QMainWindow):
         self.load()
 
     def _restart(self):
-        self.restart()
+        if self._get_restart_commit():
+            self.restart()
 
     def _quit(self):
         if self._get_close_commit():
@@ -75,7 +76,7 @@ class BaseWindow(QMainWindow):
 
     @staticmethod
     def restart():
-        print("restart")
+        transition.restart()
 
     @staticmethod
     def quit():
@@ -93,6 +94,20 @@ class BaseWindow(QMainWindow):
                                'Starte das Tunier, wenn du vorher Speichern willst. '
                                'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
         msg.setWindowTitle("KickerRechner Beenden?")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+
+        return retval == QMessageBox.Ok
+
+    def _get_restart_commit(self) -> bool:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Möchtest das Turnier neu starten?")
+        msg.setInformativeText('Du kannst im InputWindow nicht speichen. '
+                               'Starte das Tunier, wenn du vorher Speichern willst. '
+                               'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
+        msg.setWindowTitle("Turnier Neustarten?")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         retval = msg.exec_()
 
