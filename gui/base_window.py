@@ -72,7 +72,7 @@ class BaseWindow(QMainWindow):
         if check:
             transition.load(filename=file_name)
         else:
-            self.set_status_bar("Keine Datei geladen")
+            self.set_status_bar("Kein Turnier geladen")
 
     @staticmethod
     def restart():
