@@ -1,7 +1,7 @@
 # Purpur Tentakel
 # 12.01.2022
 # KickerRechner //Transition
-from logic import main_manager
+from logic import manager
 from gui import input_window, main_window, base_window
 
 
@@ -83,7 +83,7 @@ def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None 
 
 
 def put_input_window_data_to_logic(output_: tuple[list[str, bool, bool, list[str]]]) -> None:
-    main_manager.process_data_from_input_window(initial_input=output_)
+    manager.process_data_from_input_window(initial_input=output_)
 
 
 def put_main_window_data_to_logic(output_: main_window.ResultOutput) -> None:
@@ -91,23 +91,23 @@ def put_main_window_data_to_logic(output_: main_window.ResultOutput) -> None:
                                       team_name_2=output_.team_name_2, team_score_1=output_.team_score_1,
                                       team_score_2=output_.team_score_2, first_round=output_.first_round,
                                       finished=output_.finished)
-    main_manager.process_data_from_main_window(input_)
+    manager.process_data_from_main_window(input_)
 
 
 def save(filename: str) -> None:
-    main_manager.save(filename=filename)
+    manager.save(filename=filename)
 
 
 def load(filename: str) -> None:
-    main_manager.load(filename=filename)
+    manager.load(filename=filename)
 
 
 def load_autosave() -> None:
-    main_manager.load_autosave()
+    manager.load_autosave()
 
 
 def restart() -> None:
-    main_manager.restart()
+    manager.restart()
 
 
 def show_massage(massage: str) -> None:
@@ -115,7 +115,7 @@ def show_massage(massage: str) -> None:
 
 
 def crate_save_directory() -> None:
-    main_manager.create_saves_directory()
+    manager.create_saves_directory()
 
 
 def close_window() -> None:

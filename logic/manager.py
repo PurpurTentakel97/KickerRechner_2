@@ -2,6 +2,7 @@
 # 09.01.2022
 # KickerRechner // Manager
 # __Main_Sheet__
+
 import json
 import os
 from os import listdir
@@ -14,7 +15,8 @@ all_leagues: list[League] = list()
 active_leagues: list[League] = list()
 tail: str | None = None
 
-if __name__ == "__main__":
+
+def start():
     transition.create_first_input_window()
 
 
