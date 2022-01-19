@@ -102,7 +102,11 @@ def load(filename: str) -> None:
     main_manager.load(filename=filename)
 
 
-def restart():
+def load_autosave() -> None:
+    main_manager.load_autosave()
+
+
+def restart() -> None:
     main_manager.restart()
 
 
@@ -110,9 +114,9 @@ def show_massage(massage: str) -> None:
     base_window.window.set_status_bar(massage=massage)
 
 
-def crate_save_directory():
+def crate_save_directory() -> None:
     main_manager.create_saves_directory()
 
 
-def close_window():
+def close_window() -> None:
     base_window.window.close_()

@@ -18,7 +18,7 @@ if __name__ == "__main__":
     transition.create_first_input_window()
 
 
-def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, list[str]]]):
+def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, list[str]]]) -> None:
     for league_name, is_active, second_round, teams_names in initial_input:
         league: League = League(name=league_name, is_active=is_active, is_second_round=second_round,
                                 team_names=teams_names)
@@ -108,17 +108,17 @@ def _is_tournaments_finished() -> bool:
     return finished
 
 
-def create_saves_directory():
+def create_saves_directory() -> None:
     if not os.path.exists("saves"):
         os.mkdir("saves")
 
 
-def create_auto_saves_directory():
+def create_auto_saves_directory() -> None:
     if not os.path.exists("saves/auto_saves"):
         os.makedirs("saves/auto_saves")
 
 
-def save(filename: str):
+def save(filename: str) -> None:
     path = os.path.dirname(filename)
     if not os.path.exists(path):
         os.mkdir(path)
@@ -132,10 +132,62 @@ def save(filename: str):
     transition.show_massage('Turnier gespeichert als "%s"' % tail)
 
 
-def _autosave():
+def _autosave() -> None:
     create_auto_saves_directory()
+    file_name, path = _get_last_auto_save()
+    output_: tuple = _get_save_output()
+
+    with open(path, "w") as file:
+        json.dump(output_, file, indent=4)
+    global tail
+    _, tail = os.path.split(file_name)
+    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+
+
+def load(filename: str) -> None:
+    if os.path.exists(filename):
+        all_leagues.clear()
+        active_leagues.clear()
+
+        with open(filename, "r") as file:
+            data: dict = json.load(file)
+        _load_data(data)
+
+        transition.close_window()
+        _put_data_to_main_window()
+        global tail
+        _, tail = os.path.split(filename)
+        transition.show_massage('"%s" geladen' % tail)
+    else:
+        transition.show_massage("Datei nicht gefunden")
+
+
+def load_autosave() -> None:
+    if os.path.exists("saves/auto_saves"):
+        all_leagues.clear()
+        active_leagues.clear()
+        files = [f for f in listdir("saves/auto_saves") if isfile(join("saves/auto_saves", f))]
+        if not len(files) == 0:
+            file_name, path = _get_last_auto_save(load_=True)
+            with open(path, "r") as file:
+                data: dict = json.load(file)
+            _load_data(data)
+
+            transition.close_window()
+            _put_data_to_main_window()
+            global tail
+            _, tail = os.path.split(file_name)
+            transition.show_massage('"%s" geladen' % tail)
+
+        else:
+            transition.show_massage("Kein Autosave vorhanden")
+    else:
+        transition.show_massage("Datei nicht gefunden")
+
+
+def _get_last_auto_save(load_: bool = False):
     files = [f for f in listdir("saves/auto_saves") if isfile(join("saves/auto_saves", f))]
-    if len(files) < 10:
+    if len(files) < 10 and not load_:
         file_name: str = "autosave%s.json" % str(len(files) + 1)
         path: str = "saves/auto_saves/%s" % file_name
     else:
@@ -148,13 +200,7 @@ def _autosave():
                 total_time: float = time
                 path: str = f"saves/auto_saves/%s" % name
                 file_name: str = name
-    output_: tuple = _get_save_output()
-
-    with open(path, "w") as file:
-        json.dump(output_, file, indent=4)
-    global tail
-    _, tail = os.path.split(file_name)
-    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+    return file_name, path
 
 
 def _get_save_output() -> tuple:
@@ -191,40 +237,26 @@ def _get_save_output() -> tuple:
     return tuple(output)
 
 
-def load(filename: str):
-    if os.path.exists(filename):
-        all_leagues.clear()
-        active_leagues.clear()
+def _load_data(data):
+    for league_index in range(len(data)):
+        league_data: dict = data[league_index]
+        league: League = League(name=league_data["name"], is_active=league_data["is_active"],
+                                is_second_round=league_data["is_second_round"], is_load=True)
 
-        with open(filename, "r") as file:
-            data: dict = json.load(file)
-        for league_index in range(len(data)):
-            league_data: dict = data[league_index]
-            league: League = League(name=league_data["name"], is_active=league_data["is_active"],
-                                    is_second_round=league_data["is_second_round"], is_load=True)
+        for team_index in range(len(league_data["teams"])):
+            team_data: dict = league_data["teams"][team_index]
+            league.load_team(team_data=team_data)
 
-            for team_index in range(len(league_data["teams"])):
-                team_data: dict = league_data["teams"][team_index]
-                league.load_team(team_data=team_data)
+        for game_index in range(len(league_data["games"])):
+            game_data: dict = league_data["games"][game_index]
+            league.load_game(game_data=game_data)
 
-            for game_index in range(len(league_data["games"])):
-                game_data: dict = league_data["games"][game_index]
-                league.load_game(game_data=game_data)
-
-            all_leagues.append(league)
-            if league.is_active:
-                active_leagues.append(league)
-
-        transition.close_window()
-        _put_data_to_main_window()
-        global tail
-        _, tail = os.path.split(filename)
-        transition.show_massage('"%s" geladen' % tail)
-    else:
-        transition.show_massage("Datei nicht gefunden")
+        all_leagues.append(league)
+        if league.is_active:
+            active_leagues.append(league)
 
 
-def restart():
+def restart() -> None:
     transition.close_window()
     transition.create_input_window()
     _update_data_to_input_window()
