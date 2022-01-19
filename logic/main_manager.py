@@ -4,6 +4,8 @@
 # __Main_Sheet__
 import json
 import os
+from os import listdir
+from os.path import isfile, join
 
 import transition
 from logic.league import League, LeagueOutput
@@ -17,7 +19,6 @@ if __name__ == "__main__":
 
 
 def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, list[str]]]):
-    print(initial_input)
     for league_name, is_active, second_round, teams_names in initial_input:
         league: League = League(name=league_name, is_active=is_active, is_second_round=second_round,
                                 team_names=teams_names)
@@ -25,12 +26,14 @@ def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, li
         if is_active:
             active_leagues.append(league)
     _put_data_to_main_window()
+    _autosave()
 
 
 def process_data_from_main_window(input_) -> None:
     league: League = _get_league_from_name(input_.league_name)
     league.add_edit_entry(result_input=input_)
     _update_data_in_main_window()
+    _autosave()
 
 
 def _put_data_to_main_window() -> None:
@@ -110,11 +113,51 @@ def create_saves_directory():
         os.mkdir("saves")
 
 
+def create_auto_saves_directory():
+    if not os.path.exists("saves/auto_saves"):
+        os.makedirs("saves/auto_saves")
+
+
 def save(filename: str):
     path = os.path.dirname(filename)
     if not os.path.exists(path):
         os.mkdir(path)
 
+    output: tuple = _get_save_output()
+
+    with open(filename, "w") as file:
+        json.dump(output, file, indent=4)
+    global tail
+    _, tail = os.path.split(filename)
+    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+
+
+def _autosave():
+    create_auto_saves_directory()
+    files = [f for f in listdir("saves/auto_saves") if isfile(join("saves/auto_saves", f))]
+    if len(files) < 10:
+        file_name: str = "autosave%s.json" % str(len(files) + 1)
+        path: str = "saves/auto_saves/%s" % file_name
+    else:
+        file_name: str = str()
+        total_time: float = float("inf")
+        path: str = str()
+        for name in files:
+            time: float = os.path.getmtime("saves/auto_saves/%s" % name)
+            if time < total_time:
+                total_time: float = time
+                path: str = f"saves/auto_saves/%s" % name
+                file_name: str = name
+    output_: tuple = _get_save_output()
+
+    with open(path, "w") as file:
+        json.dump(output_, file, indent=4)
+    global tail
+    _, tail = os.path.split(file_name)
+    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+
+
+def _get_save_output() -> tuple:
     output: list = list()
     for league_index, league in enumerate(all_leagues):
 
@@ -145,12 +188,7 @@ def save(filename: str):
                                "is_second_round": league.is_second_round, "finished": league.finished,
                                "teams": all_teams_output, "games": all_games_output}
         output.append(league_output)
-
-    with open(filename, "w") as file:
-        json.dump(output, file, indent=4)
-    global tail
-    _, tail = os.path.split(filename)
-    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+    return tuple(output)
 
 
 def load(filename: str):
