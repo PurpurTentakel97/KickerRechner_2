@@ -11,15 +11,15 @@ window: QMainWindow | None = None
 
 
 class BaseWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._set_base_window_information()
         self._set_menu()
 
-    def _set_base_window_information(self):
+    def _set_base_window_information(self) -> None:
         self.setWindowIcon(QIcon("gui/Icons/main_icon.png"))
 
-    def _set_menu(self):
+    def _set_menu(self) -> None:
         save_action: QAction = QAction(QIcon("gui/Icons/save_icon.png"), '&Speichern', self)
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self._save)
@@ -49,33 +49,33 @@ class BaseWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(close_action)
 
-    def set_widget(self, widget):
+    def set_widget(self, widget) -> None:
         self.setCentralWidget(widget)
 
-    def set_status_bar(self, massage: str):
+    def set_status_bar(self, massage: str) -> None:
         self.statusBar().showMessage("Info: " + massage, 5000)
 
-    def _save(self):
+    def _save(self) -> None:
         self.set_status_bar("Im Input Window kann nicht gespeichert werden.")
 
-    def _load(self):
+    def _load(self) -> None:
         self.load()
 
-    def _load_autosave(self):
-        if self._get_load_autosave_commit():
+    def _load_autosave(self) -> None:
+        if self.get_load_autosave_commit():
             self.load_autosave()
 
-    def _restart(self):
+    def _restart(self) -> None:
         if self._get_restart_commit():
             self.restart()
 
-    def _quit(self):
+    def _quit(self) -> None:
         if self._get_close_commit():
             qApp.quit()
 
-    def load(self):
+    def load(self) -> None:
         transition.crate_save_directory()
-        file_name, check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
+        file_name, check = QFileDialog.getOpenFileName(None, "Turnier laden",
                                                        "saves", "KickerRechner(*.json)")
         if check:
             transition.load(filename=file_name)
@@ -83,21 +83,21 @@ class BaseWindow(QMainWindow):
             self.set_status_bar("Kein Turnier geladen")
 
     @staticmethod
-    def load_autosave():
+    def load_autosave() -> None:
         transition.load_autosave()
 
     @staticmethod
-    def restart():
+    def restart() -> None:
         transition.restart()
 
     @staticmethod
-    def quit():
+    def quit() -> None:
         qApp.quit()
 
-    def close_(self):
+    def close_(self) -> None:
         self.close()
 
-    def _get_load_autosave_commit(self) -> bool:
+    def get_load_autosave_commit(self) -> bool:
         msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Information)
 
@@ -106,10 +106,10 @@ class BaseWindow(QMainWindow):
                                'Starte das Tunier, wenn du vorher Speichern willst. '
                                'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
         msg.setWindowTitle("Letzten Autosave laden?")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         retval = msg.exec_()
 
-        return retval == QMessageBox.Ok
+        return retval == QMessageBox.Yes
 
     def _get_restart_commit(self) -> bool:
         msg = QMessageBox(self)
@@ -120,10 +120,10 @@ class BaseWindow(QMainWindow):
                                'Starte das Tunier, wenn du vorher Speichern willst. '
                                'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
         msg.setWindowTitle("Turnier Neustarten?")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         retval = msg.exec_()
 
-        return retval == QMessageBox.Ok
+        return retval == QMessageBox.Yes
 
     def _get_close_commit(self) -> bool:
         msg = QMessageBox(self)
@@ -134,7 +134,7 @@ class BaseWindow(QMainWindow):
                                'Starte das Tunier, wenn du vorher Speichern willst. '
                                'Du kannst deine Eingabe nächstes Mal nach dem Laden mit "Neustart" editieren.')
         msg.setWindowTitle("KickerRechner Beenden?")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         retval = msg.exec_()
 
-        return retval == QMessageBox.Ok
+        return retval == QMessageBox.Yes

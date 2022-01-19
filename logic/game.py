@@ -7,7 +7,7 @@ from logic.enum_sheet import Result
 
 
 class Game:
-    def __init__(self, game_name: str, team_1: Team, team_2: Team, game_day: int, first_round: bool):
+    def __init__(self, game_name: str, team_1: Team, team_2: Team, game_day: int, first_round: bool) -> None:
         self.game_name: str = game_name
         self.team_1: Team = team_1
         self.team_2: Team = team_2
@@ -30,7 +30,7 @@ class Game:
         else:
             print("Team not in Game")  # TODO to UI
 
-    def add_entry(self, result_input, team_1: Team):
+    def add_entry(self, result_input, team_1: Team) -> None:
         if team_1 == self.team_1:
             self.score_team_1: int = result_input.team_score_1
             self.score_team_2: int = result_input.team_score_2
@@ -51,7 +51,7 @@ class Game:
         self.finished: bool = True
         self._add_team_statistics()
 
-    def _add_team_statistics(self):
+    def _add_team_statistics(self) -> None:
         match self.first_round:
             case True:
                 self.team_1.first_round_points += self.team_1_result
@@ -95,11 +95,11 @@ class Game:
                         self.team_1.second_round_loose += 1
                         self.team_2.second_round_wins += 1
 
-    def edit_entry(self, result_input, team_1: Team):
+    def edit_entry(self, result_input, team_1: Team) -> None:
         self._remove_team_statistics()
         self.add_entry(result_input=result_input, team_1=team_1)
 
-    def _remove_team_statistics(self):
+    def _remove_team_statistics(self) -> None:
         match self.first_round:
             case True:
                 self.team_1.first_round_points -= self.team_1_result

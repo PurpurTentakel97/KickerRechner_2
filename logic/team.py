@@ -30,7 +30,7 @@ class Team:
         self.second_round_loose: int = 0
         self.loose: int = int()
 
-    def set_total_values(self):
+    def set_total_values(self) -> None:
         self.points: int = self.first_round_points + self.second_round_points
 
         self.goals: int = self.first_round_goals + self.second_round_goals

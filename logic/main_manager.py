@@ -19,6 +19,8 @@ if __name__ == "__main__":
 
 
 def process_data_from_input_window(initial_input: tuple[list[str, bool, bool, list[str]]]) -> None:
+    all_leagues.clear()
+    active_leagues.clear()
     for league_name, is_active, second_round, teams_names in initial_input:
         league: League = League(name=league_name, is_active=is_active, is_second_round=second_round,
                                 team_names=teams_names)
@@ -139,9 +141,8 @@ def _autosave() -> None:
 
     with open(path, "w") as file:
         json.dump(output_, file, indent=4)
-    global tail
-    _, tail = os.path.split(file_name)
-    transition.show_massage('Turnier gespeichert als "%s"' % tail)
+    _, tail_ = os.path.split(file_name)
+    transition.show_massage('Turnier gespeichert als "%s"' % tail_)
 
 
 def load(filename: str) -> None:
@@ -175,9 +176,8 @@ def load_autosave() -> None:
 
             transition.close_window()
             _put_data_to_main_window()
-            global tail
-            _, tail = os.path.split(file_name)
-            transition.show_massage('"%s" geladen' % tail)
+            _, tail_ = os.path.split(file_name)
+            transition.show_massage('"%s" geladen' % tail_)
 
         else:
             transition.show_massage("Kein Autosave vorhanden")
@@ -237,7 +237,7 @@ def _get_save_output() -> tuple:
     return tuple(output)
 
 
-def _load_data(data):
+def _load_data(data) -> None:
     for league_index in range(len(data)):
         league_data: dict = data[league_index]
         league: League = League(name=league_data["name"], is_active=league_data["is_active"],

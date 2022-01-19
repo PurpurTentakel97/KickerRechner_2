@@ -63,7 +63,7 @@ class GameListItem(QListWidgetItem):
 
 class ResultOutput:
     def __init__(self, league_name: str, team_name_1: str, team_name_2: str, team_score_1: int, team_score_2: int,
-                 first_round: bool, finished: bool):
+                 first_round: bool, finished: bool) -> None:
         self.league_name: str = league_name
         self.team_name_1: str = team_name_1
         self.team_name_2: str = team_name_2
@@ -251,7 +251,7 @@ class MainWindow(BaseWindow):
                     day_set: bool = True
         return day_set
 
-    def _create_games(self):
+    def _create_games(self) -> None:
         self._clear_ui_list(ListType.GAME)
         league_item: LeagueListItem = self._get_current_league()
         day_item: DayListItem = self._get_current_day()
@@ -317,10 +317,10 @@ class MainWindow(BaseWindow):
             self._first_round_btn.setStyleSheet("background-color: white")
             self._second_round_btn.setStyleSheet("background-color: light grey")
 
-    def _set_day(self):
+    def _set_day(self) -> None:
         self._create_games()
 
-    def _set_game(self):
+    def _set_game(self) -> None:
         league_item: LeagueListItem = self._get_current_league()
         game_item: GameListItem = self._game_list.currentItem()
         for game in league_item.league.all_games:
@@ -372,7 +372,7 @@ class MainWindow(BaseWindow):
             if not self._table_tabs.currentIndex() == 2:
                 self._table_tabs.setCurrentIndex(1)
 
-    def _set_tables(self, table_type: TableType):
+    def _set_tables(self, table_type: TableType) -> None:
         league_item: LeagueListItem = self._get_current_league()
 
         dummy_list: tuple[list] | None = None
@@ -402,7 +402,7 @@ class MainWindow(BaseWindow):
     def _set_add_score_btn(self) -> None:
         self._add_score_btn.setEnabled(self._is_valid_input())
 
-    def _set_focus(self):
+    def _set_focus(self) -> None:
         if len(self._score_1_le.text().strip()) == 0:
             self._score_1_le.setFocus()
         elif len(self._score_1_le.text().strip()) != 0 and len(self._score_2_le.text().strip()) != 0:
@@ -490,7 +490,7 @@ class MainWindow(BaseWindow):
                     self.set_status_bar("Keine Änderung vorgenommen")
             transition.put_main_window_data_to_logic(output_=output)
 
-    def _display_finished(self):
+    def _display_finished(self) -> None:
         msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Information)
 
@@ -501,7 +501,7 @@ class MainWindow(BaseWindow):
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
 
-    def update_data(self, update_input: tuple, next_league_index: int, finished: bool):
+    def update_data(self, update_input: tuple, next_league_index: int, finished: bool) -> None:
         self.finished: bool = finished
         self._next_league_index: int = next_league_index
         self._leagues: tuple = update_input
@@ -510,27 +510,33 @@ class MainWindow(BaseWindow):
         if self.finished:
             self._display_finished()
 
-    def _save(self):
+    def _save(self) -> None:
         transition.crate_save_directory()
-        file_name, check = QFileDialog.getSaveFileName(None, "QFileDialog.getOpenFileName()",
+        file_name, check = QFileDialog.getSaveFileName(None, "Turnier speichern",
                                                        "saves", "KickerRechner(*.json)")
         if check:
             transition.save(filename=file_name)
         else:
             self.set_status_bar("Nicht gespeichert")
 
-    def _load(self):
+    def _load(self) -> None:
         if self._get_save_bool():
             self._save()
         self.load()
 
-    def _restart(self):
+    def _load_autosave(self) -> None:
+        if self.get_load_autosave_commit():
+            if self._get_save_bool():
+                self._save()
+            self.load_autosave()
+
+    def _restart(self) -> None:
         if self._get_restart_commit():
             if self._get_save_bool():
                 self._save()
             self.restart()
 
-    def _quit(self):
+    def _quit(self) -> None:
         if self._get_close_commit():
             if self._get_save_bool():
                 self._save()
@@ -554,10 +560,10 @@ class MainWindow(BaseWindow):
 
         msg.setText("Möchtest du den KickerRechner schlißen?")
         msg.setWindowTitle("KickerRechner Beenden?")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         retval = msg.exec_()
 
-        return retval == QMessageBox.Ok
+        return retval == QMessageBox.Yes
 
     def _get_restart_commit(self) -> bool:
         msg = QMessageBox(self)
@@ -567,10 +573,10 @@ class MainWindow(BaseWindow):
         msg.setInformativeText('Möchtest du das Turnier neu starten?'
                                'Es wird sich das Import-Window mit deiner Eingabe öffnen.')
         msg.setWindowTitle("Turnier Neustarten?")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         retval = msg.exec_()
 
-        return retval == QMessageBox.Ok
+        return retval == QMessageBox.Yes
 
 
 window: MainWindow | None = None

@@ -555,6 +555,8 @@ class InputWindow(BaseWindow):
             for league in reversed(self.leagues):
                 self._league_list.setCurrentItem(league)
                 self._set_current_league()
+
+            self._set_start_btn_bool()
         else:
             self._create_initial_league()
 
@@ -562,7 +564,7 @@ class InputWindow(BaseWindow):
 window: InputWindow | None = None
 
 
-def create_first_input_window():
+def create_first_input_window() -> None:
     app = QApplication(sys.argv)
     global window
     window = InputWindow()
@@ -570,7 +572,7 @@ def create_first_input_window():
     app.exec_()
 
 
-def create_input_window():
+def create_input_window() -> None:
     global window
     window = InputWindow()
     base_window.window = window
