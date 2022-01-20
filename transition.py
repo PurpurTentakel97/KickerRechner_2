@@ -56,7 +56,7 @@ def put_logic_data_to_input_window(output_: tuple) -> None:
     input_window.window.update_data(input_=output_)
 
 
-def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None = None, finished: bool = False) -> None:
+def put_logic_data_to_main_window(output_: tuple, finished: bool, next_league_index: int | None = None) -> None:
     input_: list[LeagueInput] = list()
     for league in output_:
         next_game: GameInput | None = None
@@ -76,7 +76,7 @@ def put_logic_data_to_main_window(output_: tuple, next_league_index: int | None 
                                               total_table=league.total_table)
         input_.append(new_league)
     if next_league_index is None:
-        main_window.create_main_window(initial_input=tuple(input_))
+        main_window.create_main_window(initial_input=tuple(input_), finished=finished)
     else:
         main_window.window.update_data(update_input=tuple(input_), next_league_index=next_league_index,
                                        finished=finished)

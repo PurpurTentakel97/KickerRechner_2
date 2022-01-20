@@ -74,13 +74,13 @@ class ResultOutput:
 
 
 class MainWindow(BaseWindow):
-    def __init__(self, initial_input: tuple) -> None:
+    def __init__(self, initial_input: tuple, finished: bool) -> None:
         super().__init__()
         self._leagues = initial_input
         self._league_list_items: list[LeagueListItem] = list()
         self._current_game: transition.GameInput | None = None
         self._next_league_index: int = 0
-        self.finished: bool = False
+        self.finished: bool = finished
 
         self._create_initial_ui()
         self._create_initial_text()
@@ -89,6 +89,8 @@ class MainWindow(BaseWindow):
 
         self._create_leagues()
         self._set_league()
+        if self.finished:
+            self._display_finished()
 
     def _create_initial_ui(self) -> None:
         self.widget = QWidget()
@@ -290,6 +292,7 @@ class MainWindow(BaseWindow):
         self.setWindowTitle("KickerRechner")
 
     def _set_league(self) -> None:
+        print(self.finished)
         if not self.finished:
             self._current_game: transition.GameInput | None = None
         else:
@@ -582,7 +585,7 @@ class MainWindow(BaseWindow):
 window: MainWindow | None = None
 
 
-def create_main_window(initial_input: tuple) -> None:
+def create_main_window(initial_input: tuple, finished: bool) -> None:
     global window
-    window = MainWindow(initial_input=initial_input)
+    window = MainWindow(initial_input=initial_input, finished=finished)
     base_window.window = window

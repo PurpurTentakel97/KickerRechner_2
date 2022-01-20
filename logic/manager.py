@@ -44,7 +44,8 @@ def _put_data_to_main_window() -> None:
     output: list[LeagueOutput] = list()
     for league in active_leagues:
         output.append(league.get_output())
-    transition.put_logic_data_to_main_window(tuple(output))
+    finished: bool = _is_tournaments_finished()
+    transition.put_logic_data_to_main_window(output_=tuple(output), finished=finished)
 
 
 def _update_data_to_input_window() -> None:
@@ -244,6 +245,8 @@ def _load_data(data) -> None:
         league_data: dict = data[league_index]
         league: League = League(name=league_data["name"], is_active=league_data["is_active"],
                                 is_second_round=league_data["is_second_round"], is_load=True)
+
+        league.finished = league_data["finished"]
 
         for team_index in range(len(league_data["teams"])):
             team_data: dict = league_data["teams"][team_index]
