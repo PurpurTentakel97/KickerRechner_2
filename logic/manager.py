@@ -191,7 +191,7 @@ def load_autosave() -> None:
 def _get_last_auto_save(load_: bool = False):
     files = [f for f in listdir("saves/auto_saves") if isfile(join("saves/auto_saves", f))]
     if len(files) < 10 and not load_:
-        file_name: str = "autosave%s.json" % str(len(files) + 1)
+        file_name: str = "autosave%s.ks" % str(len(files) + 1)
         path: str = "saves/auto_saves/%s" % file_name
     else:
         file_name: str = str()

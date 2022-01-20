@@ -84,7 +84,7 @@ class BaseWindow(QMainWindow):
     def load(self) -> None:
         transition.crate_save_directory()
         file_name, check = QFileDialog.getOpenFileName(None, "Turnier laden",
-                                                       "saves", "KickerRechner(*.json)")
+                                                       "saves", "KickerRechner(*.ks)")
         if check:
             transition.load(filename=file_name)
         else:
