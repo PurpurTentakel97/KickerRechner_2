@@ -5,6 +5,8 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QMenuBar, QMenu, QFileDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 
+import webbrowser
+
 import transition
 
 window: QMainWindow | None = None
@@ -17,25 +19,29 @@ class BaseWindow(QMainWindow):
         self._set_menu()
 
     def _set_base_window_information(self) -> None:
-        self.setWindowIcon(QIcon("gui/Icons/main_icon.png"))
+        self.setWindowIcon(QIcon("assets/icons/main_icon.png"))
 
     def _set_menu(self) -> None:
-        save_action: QAction = QAction(QIcon("gui/Icons/save_icon.png"), '&Speichern', self)
+        save_action: QAction = QAction(QIcon("assets/icons/save_icon.png"), '&Speichern', self)
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self._save)
 
-        load_action: QAction = QAction(QIcon("gui/Icons/load_icon.png"), '&Laden', self)
+        load_action: QAction = QAction(QIcon("assets/icons/load_icon.png"), '&Laden', self)
         load_action.setShortcut("Ctrl+L")
         load_action.triggered.connect(self._load)
 
-        load_autosave_action: QAction = QAction(QIcon("gui/Icons/load_autosave_icon.png"), '&Autosave laden', self)
+        load_autosave_action: QAction = QAction(QIcon("assets/icons/load_autosave_icon.png"), '&Autosave laden', self)
         load_autosave_action.triggered.connect(self._load_autosave)
 
-        restart_action: QAction = QAction(QIcon("gui/Icons/restart_icon.png"), '&Neustart', self)
+        restart_action: QAction = QAction(QIcon("assets/icons/restart_icon.png"), '&Neustart', self)
         restart_action.setShortcut("Ctrl+R")
         restart_action.triggered.connect(self._restart)
 
-        close_action: QAction = QAction(QIcon("gui/Icons/quit_icon.png"), '&Schließen', self)
+        about_action: QAction = QAction(QIcon("assets/icons/info_icon.png"), '&Infos', self)
+        about_action.setShortcut("Ctrl+I")
+        about_action.triggered.connect(self.about)
+
+        close_action: QAction = QAction(QIcon("assets/icons/quit_icon.png"), '&Schließen', self)
         close_action.triggered.connect(self._quit)
 
         menu_bar: QMenuBar = self.menuBar()
@@ -46,6 +52,8 @@ class BaseWindow(QMainWindow):
         file_menu.addAction(load_autosave_action)
         file_menu.addSeparator()
         file_menu.addAction(restart_action)
+        file_menu.addSeparator()
+        file_menu.addAction(about_action)
         file_menu.addSeparator()
         file_menu.addAction(close_action)
 
@@ -89,6 +97,9 @@ class BaseWindow(QMainWindow):
     @staticmethod
     def restart() -> None:
         transition.restart()
+
+    def about(self) -> None:
+        self._display_infos()
 
     @staticmethod
     def quit() -> None:
@@ -138,3 +149,24 @@ class BaseWindow(QMainWindow):
         retval = msg.exec_()
 
         return retval == QMessageBox.Yes
+
+    def _display_infos(self) -> None:
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("Infos:")
+        msg.setInformativeText('PurpurTentakel \n'
+                               'Python 3.10.\n'
+                               'Der KickerRechner ist dafür gedacht ein Turnier durchzuführen.\n'
+                               'Urprünglich entworfen für die zahlreichen KickerTurniere, wie wir veranstalten.\n'
+                               'Bei Bugs gerne im Discord melden. THX.')
+        msg.setWindowTitle("Infos")
+        msg.addButton(QMessageBox.Ok)
+        yes_button = msg.addButton('Discord', QMessageBox.YesRole)
+        yes_button.clicked.connect(self.open_discord)
+
+        retval = msg.exec_()
+
+    @staticmethod
+    def open_discord() -> None:
+        webbrowser.open("https://discord.gg/JG5fsFZqEE")
