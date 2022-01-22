@@ -516,7 +516,7 @@ class MainWindow(BaseWindow):
     def _save(self) -> None:
         transition.crate_save_directory()
         file_name, check = QFileDialog.getSaveFileName(None, "Turnier speichern",
-                                                       "saves", "KickerRechner(*.ks)")
+                                                       "saves", "KickerRechner(*.krs)")
         if check:
             transition.save(filename=file_name)
         else:
